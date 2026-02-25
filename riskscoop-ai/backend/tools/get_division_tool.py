@@ -13,6 +13,7 @@ Usage Flow:
 """
 
 from agno.tools import tool
+from agno.run import RunContext
 
 from services.nominatim_service import NominatimService
 from services.layer_service import LayerService
@@ -23,7 +24,7 @@ layer_service = LayerService()
 
 @tool
 def get_division(
-    session_state: dict,
+    run_context: RunContext,
     feature_query: str,
     layer_name: str,
 ) -> str:
@@ -72,6 +73,10 @@ def get_division(
         - Boundaries are retrieved in WGS84 (EPSG:4326) coordinate system
         - Complex boundaries (multipolygons) are fully supported
     """
+    session_state = run_context.session_state
+    if session_state is None:
+        session_state = {}
+
     gdf = nominatim_service.search_and_get_all_boundaries(feature_query)
 
     if gdf.empty:

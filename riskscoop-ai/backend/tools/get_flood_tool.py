@@ -18,6 +18,7 @@ Data Source:
 
 import logging
 from agno.tools import tool
+from agno.run import RunContext
 
 from services.glofas_service import GloFASService
 from services.layer_service import LayerService
@@ -30,7 +31,7 @@ layer_service = LayerService()
 
 @tool
 def get_flood_forecast(
-    session_state: dict,
+    run_context: RunContext,
     aoi_layer_name: str,
     output_layer_name: str,
 ) -> str:
@@ -66,6 +67,10 @@ def get_flood_forecast(
         - Downloads real flood hazard data from Copernicus CEMS
         - Results can be overlaid with buildings/infrastructure for impact analysis
     """
+    session_state = run_context.session_state
+    if session_state is None:
+        session_state = {}
+
     logger.info(
         f"[get_flood_tool] Getting flood hazard for AOI: {aoi_layer_name}"
     )

@@ -18,6 +18,7 @@ from typing import Optional
 import geopandas as gpd
 import numpy as np
 from agno.tools import tool
+from agno.run import RunContext
 from shapely.geometry import Point
 
 from services.layer_service import LayerService
@@ -33,7 +34,7 @@ FLOOD_STATS_DIR.mkdir(parents=True, exist_ok=True)
 
 @tool
 def intersect_flood_zones(
-    session_state: dict,
+    run_context: RunContext,
     features_layer_name: str,
     flood_layer_name: str,
     output_layer_name: str,
@@ -79,6 +80,10 @@ def intersect_flood_zones(
         - Only features intersecting flood zones are included in output
         - Use with any feature type: buildings, infrastructure, places, etc.
     """
+    session_state = run_context.session_state
+    if session_state is None:
+        session_state = {}
+
     logger.info(f"[intersect_flood_tool] Intersecting {features_layer_name} with {flood_layer_name}")
 
     # Validate risk level

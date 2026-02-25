@@ -20,7 +20,7 @@ from agno.models.google import Gemini
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 
 from tools.get_division_tool import get_division
 from tools.search_division_tool import search_division
@@ -371,6 +371,7 @@ agno_agent = Agent(
     num_history_runs=3,
     read_chat_history=True,
     read_tool_call_history=True,
+    session_state={"layers": {}, "raster_layers": {}},
 )
 
 # Create the AgentOS
@@ -460,14 +461,15 @@ async def get_flood_statistics(layer_name: str):
     )
 
 
-# Mount test frontend
+# Serve test frontend via explicit route (mount conflicts with AgentOS catch-all)
 test_frontend_dir = Path(__file__).parent / "test_frontend"
-if test_frontend_dir.exists():
-    app.mount(
-        "/test",
-        StaticFiles(directory=test_frontend_dir, html=True),
-        name="test_frontend",
-    )
+
+@app.get("/test", response_class=HTMLResponse)
+async def serve_test_frontend():
+    index_file = test_frontend_dir / "index.html"
+    if index_file.exists():
+        return HTMLResponse(content=index_file.read_text(), status_code=200)
+    return HTMLResponse(content="Frontend not found", status_code=404)
 
 
 if __name__ == "__main__":

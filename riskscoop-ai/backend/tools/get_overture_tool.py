@@ -18,6 +18,7 @@ Usage Flow:
 """
 
 from agno.tools import tool
+from agno.run import RunContext
 
 from services.layer_service import LayerService
 from services.sql_tool_utils import execute_sql_with_aoi
@@ -27,7 +28,7 @@ layer_service = LayerService()
 
 @tool
 def get_overture_data(
-    session_state: dict,
+    run_context: RunContext,
     aoi_layer_name: str,
     sql: str,
     output_layer_name: str,
@@ -70,6 +71,10 @@ def get_overture_data(
         ...     "SELECT * FROM overture_places WHERE primary_category = 'restaurant'",
         ...     "restaurants")
     """
+    session_state = run_context.session_state
+    if session_state is None:
+        session_state = {}
+
     # Get AOI layer UUID from session state
     if "layers" not in session_state or aoi_layer_name not in session_state["layers"]:
         available = list(session_state.get("layers", {}).keys())
@@ -95,7 +100,7 @@ def get_overture_data(
 
 
 @tool
-def list_layers(session_state: dict) -> str:
+def list_layers(run_context: RunContext) -> str:
     """List all available layers in the current session.
 
     Args:
@@ -104,6 +109,10 @@ def list_layers(session_state: dict) -> str:
     Returns:
         str: Formatted list of layer names and their UUIDs.
     """
+    session_state = run_context.session_state
+    if session_state is None:
+        session_state = {}
+
     if "layers" not in session_state or not session_state["layers"]:
         return "No layers in session. Use get_division to create an AOI first."
 
