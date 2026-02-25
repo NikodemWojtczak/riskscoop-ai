@@ -291,6 +291,52 @@ Poniżej przedstawiono przykładowe interakcje z~systemem, które posłużą do 
     \label{fig:example_krakow}
 \end{figure}
 
+\subsubsection{Przykład 4: Infrastruktura w~okolicach Płocka}
+
+\begin{samepage}
+\textbf{Zapytanie:} \textit{,,Find critical infrastructure at flood risk in Płock, Poland''}
+
+\textbf{Sekwencja wywołań agenta:}
+\begin{enumerate}
+    \item \texttt{get\_division("Płock, Poland", "plock\_aoi")},
+    \item \texttt{get\_overture\_data("plock\_aoi", "infrastructure", "plock\_infrastructure")},
+    \item \texttt{get\_flood\_forecast("plock\_aoi", "RP100", "plock\_flood")},
+    \item \texttt{intersect\_flood\_zones("plock\_infrastructure", "plock\_flood", "infrastructure\_at\_risk")}.
+\end{enumerate}
+
+\textbf{Oczekiwany wynik:} Mapa infrastruktury zagrożonej powodzią w~Płocku. Okolice Płocka doświadczyły katastrofalnej powodzi w~1981~roku, spowodowanej zatorami lodowymi na Wiśle, która dotknęła Kępę Polską, Dobrzyków oraz dzielnicę Płock-Radziwie.
+\end{samepage}
+
+\begin{figure}[H]
+    \centering
+    \makebox[\textwidth]{\includegraphics[width=1.15\textwidth]{Figures/Infrastruktura_w_Plocku.png}}
+    \caption{Przykład analizy: infrastruktura w~okolicach Płocka (opracowanie własne)}
+    \label{fig:example_plock}
+\end{figure}
+
+\subsubsection{Przykład 5: Infrastruktura we Wrocławiu}
+
+\begin{samepage}
+\textbf{Zapytanie:} \textit{,,Show infrastructure at flood risk in Wrocław, Poland''}
+
+\textbf{Sekwencja wywołań agenta:}
+\begin{enumerate}
+    \item \texttt{get\_division("Wrocław, Poland", "wroclaw\_aoi")},
+    \item \texttt{get\_overture\_data("wroclaw\_aoi", "infrastructure", "wroclaw\_infrastructure")},
+    \item \texttt{get\_flood\_forecast("wroclaw\_aoi", "RP100", "wroclaw\_flood")},
+    \item \texttt{intersect\_flood\_zones("wroclaw\_infrastructure", "wroclaw\_flood", "infrastructure\_at\_risk")}.
+\end{enumerate}
+
+\textbf{Oczekiwany wynik:} Mapa infrastruktury zagrożonej powodzią we Wrocławiu. Wrocław doświadczył Powodzi Tysiąclecia w~1997~roku, która spowodowała katastrofalne zniszczenia w~centrum miasta, na osiedlu Kozanów oraz na terenach zalewowych Odry.
+\end{samepage}
+
+\begin{figure}[H]
+    \centering
+    \makebox[\textwidth]{\includegraphics[width=1.15\textwidth]{Figures/Infrastruktura_we_Wroclawiu.png}}
+    \caption{Przykład analizy: infrastruktura we Wrocławiu (opracowanie własne)}
+    \label{fig:example_wroclaw}
+\end{figure}
+
 \subsection{Podsumowanie implementacji}
 
 Zaimplementowany system realizuje wszystkie wymagania zdefiniowane w~projekcie:
