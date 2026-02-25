@@ -1,0 +1,69 @@
+\section*{Wykaz skrótów}
+\addcontentsline{toc}{section}{Wykaz skrótów}
+
+\begin{tabular}{ll}
+\textbf{AI} & Artificial Intelligence (sztuczna inteligencja) \\
+\textbf{API} & Application Programming Interface (interfejs programistyczny) \\
+\textbf{AOI} & Area of Interest (obszar zainteresowania) \\
+\textbf{CEMS} & Copernicus Emergency Management Service \\
+\textbf{CDS} & Climate Data Store \\
+\textbf{GeoJSON} & Geographic JavaScript Object Notation \\
+\textbf{GeoTIFF} & Geographic Tagged Image File Format \\
+\textbf{GIS} & Geographic Information System (system informacji geograficznej) \\
+\textbf{GloFAS} & Global Flood Awareness System \\
+\textbf{HTTP} & Hypertext Transfer Protocol \\
+\textbf{LLM} & Large Language Model (duży model językowy) \\
+\textbf{OSM} & OpenStreetMap \\
+\textbf{POI} & Point of Interest (punkt zainteresowania) \\
+\textbf{REST} & Representational State Transfer \\
+\textbf{RP} & Return Period (okres powrotny) \\
+\textbf{UUID} & Universally Unique Identifier \\
+\end{tabular}
+
+\newpage
+\section*{Wykaz definicji}
+\addcontentsline{toc}{section}{Wykaz definicji}
+
+\begin{description}
+    \item[Agent AI] Program komputerowy wykorzystujący duży model językowy (LLM) do autonomicznego wykonywania zadań poprzez wybór i~sekwencjonowanie dostępnych narzędzi.
+
+    \item[AgentOS] Wzorzec architektoniczny z~frameworka Agno, który automatycznie generuje aplikację FastAPI z~endpointami dla agenta AI.
+
+    \item[Analiza przestrzenna] Metoda analizy danych geograficznych polegająca na badaniu relacji przestrzennych między obiektami (np. przecięcia, odległości, zawieranie).
+
+    \item[Bounding box] Prostokątny obszar definiowany przez współrzędne narożników (minX, minY, maxX, maxY), używany do filtrowania danych przestrzennych.
+
+    \item[Geokodowanie] Proces konwersji adresów lub nazw miejscowości na współrzędne geograficzne.
+
+    \item[GloFAS] Globalny system wczesnego ostrzegania przed powodziami prowadzony przez Copernicus Emergency Management Service.
+
+    \item[Okres powrotny] Statystyczny czas między zdarzeniami o~określonej skali (np. RP100 oznacza powódź występującą średnio raz na 100~lat).
+
+    \item[Overture Maps] Otwarty zbiór danych geograficznych tworzony przez konsorcjum firm technologicznych, zawierający budynki, POI i~infrastrukturę.
+
+    \item[Spatial Join] Operacja łączenia zbiorów danych geograficznych na podstawie relacji przestrzennych (np. przecięcia geometrii).
+
+    \item[Tool (narzędzie)] Funkcja Python z~dekoratorem \texttt{@tool}, którą agent AI może wywołać w~celu wykonania określonego zadania.
+\end{description}
+
+\newpage
+\section*{Wykaz załączników}
+\addcontentsline{toc}{section}{Wykaz załączników}
+
+\begin{description}
+    \item[Załącznik A] Kod źródłowy systemu RiskScoop AI
+    \begin{itemize}
+        \item A.1 -- Plik główny \texttt{my\_os.py} (konfiguracja AgentOS)
+        \item A.2 -- Narzędzia agenta (\texttt{tools/*.py})
+        \item A.3 -- Serwisy biznesowe (\texttt{services/*.py})
+        \item A.4 -- Frontend (\texttt{test\_frontend/index.html})
+    \end{itemize}
+
+    \item[Załącznik B] Screenshoty interfejsu użytkownika
+    \begin{itemize}
+        \item B.1 -- Analiza szpitali w~Genewie (rys.~\ref{fig:example_geneva})
+        \item B.2 -- Analiza szkół w~Warszawie (rys.~\ref{fig:example_warsaw})
+        \item B.3 -- Analiza budynków w~Krakowie (rys.~\ref{fig:example_krakow})
+    \end{itemize}
+\end{description}
+

@@ -1,0 +1,18 @@
+Temat pracy: RiskScoop AI - system analizy ryzyka powodziowego z wykorzystaniem agenta AI
+Celem pracy inżynierskiej jest aplikacja webowa RiskScoop AI, która stanowi prototyp agenta AI do automatycznej analizy ryzyka powodziowego dla kluczowej infrastruktury. Rozwiązanie ma zastosowanie w obszarze Rapid Mapping i posiada następujące funkcjonalności:
+ 
+- interakcja z systemem poprzez zapytania w języku naturalnym dotyczące konkretnych lokalizacji i typów obiektów (szpitale, drogi, mosty itp.),
+- automatyczne przetwarzanie zapytań użytkownika przez agenta AI i tłumaczenie ich na operacje geoprzestrzenne,
+- integracja danych z bazy Overture Maps zawierającej informacje o infrastrukturze i obiektach,
+- integracja danych z systemu Copernicus GloFAS (Global Flood Awareness System) dostarczającego informacje o zagrożeniu powodziowym,
+- kwantyfikacja ryzyka dla zidentyfikowanych obiektów,
+- wizualizacja wyników analizy na interaktywnej mapie z wykorzystaniem biblioteki Mapbox,
+- interfejs użytkownika umożliwiający intuicyjne przeglądanie i filtrowanie wyników analizy,
+- możliwość zapytań o różne typy infrastruktury krytycznej (służba zdrowia, transport, obiekty użyteczności publicznej),
+- frontend aplikacji stworzony w technologii React zapewniający responsywny interfejs dostępny przez przeglądarkę internetową,
+- backend obsługujący przetwarzanie zapytań, integrację źródeł danych oraz operacje geoprzestrzenne,
+- wykorzystanie modeli sztucznej inteligencji do interpretacji zapytań w języku naturalnym i automatyzacji procesu analizy.
+- obsługa przykładowych zapytań takich jak:
+"Które szpitale w Warszawie są zagrożone powodzią?",
+"Pokaż drogi krajowe w strefie wysokiego ryzyka powodziowego w województwie małopolskim",
+"Ile szkół podstawowych znajduje się w obszarze zagrożenia powodziowego w Krakowie?",

@@ -1,0 +1,261 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Colors
+\definecolor{plblue}{RGB}{0,83,159}
+\setbeamercolor{structure}{fg=plblue}
+
+% Remove navigation
+\setbeamertemplate{navigation symbols}{}
+
+% Title info
+\title[RiskScoop AI]{RiskScoop AI}
+\subtitle{System analizy ryzyka powodziowego\\z~wykorzystaniem agentów AI}
+\author[Nikodem Wojtczak]{Nikodem Wojtczak\\Numer indeksu: 247823}
+\institute{Promotor: dr~inż. Piotr Mielczarski}
+\date[2026]{2026}
+
+\begin{document}
+
+% =============================================================================
+% SLAJD 1: Strona tytułowa
+% =============================================================================
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% =============================================================================
+% SLAJD 2: Problem i cel pracy
+% =============================================================================
+\begin{frame}{Problem i cel pracy}
+\begin{block}{Problem badawczy}
+Brak narzędzi umożliwiających analizę ryzyka powodziowego w~języku naturalnym dla niespecjalistów
+\end{block}
+
+\vspace{0.5cm}
+
+\begin{block}{Cel pracy}
+Zaprojektowanie i~implementacja systemu z~agentem AI do analizy ryzyka powodziowego na podstawie zapytań w~języku naturalnym
+\end{block}
+
+\vspace{0.5cm}
+
+\textbf{Główne funkcje:}
+\begin{itemize}
+    \item Wyszukiwanie obiektów infrastruktury (szpitale, szkoły, budynki)
+    \item Analiza zagrożenia powodziowego (Copernicus GloFAS)
+    \item Wizualizacja wyników na interaktywnej mapie
+    \item Klasyfikacja ryzyka (niskie/średnie/wysokie)
+\end{itemize}
+\end{frame}
+
+% =============================================================================
+% SLAJD 3: Architektura systemu
+% =============================================================================
+\begin{frame}{Architektura systemu}
+\begin{center}
+\begin{tikzpicture}[
+    layer/.style={draw, rounded corners, minimum width=9cm, minimum height=1cm, align=center, font=\small},
+    arrow/.style={-{Stealth[length=2mm]}, thick}
+]
+
+\node[font=\small] (user) at (0,0) {\textbf{Użytkownik}};
+
+\node[layer, fill=blue!15, below=0.4cm of user] (frontend) {
+    \textbf{Warstwa prezentacji}\\
+    \footnotesize React 18 \quad Mapbox GL JS \quad ChatPanel \quad LayerPanel
+};
+
+\node[layer, fill=green!15, below=0.4cm of frontend] (agentos) {
+    \textbf{Warstwa AgentOS}\\
+    \footnotesize FastAPI \quad Gemini 2.0 Flash \quad 6 Tools \quad SQLite
+};
+
+\node[layer, fill=orange!15, below=0.4cm of agentos] (services) {
+    \textbf{Warstwa serwisów}\\
+    \footnotesize Nominatim \quad Overture \quad GloFAS \quad Layer
+};
+
+\node[layer, fill=red!15, below=0.4cm of services] (external) {
+    \textbf{Dane zewnętrzne}\\
+    \footnotesize OpenStreetMap \quad Overture Maps \quad Copernicus CDS \quad GeoJSON
+};
+
+\draw[arrow] (user) -- (frontend);
+\draw[arrow] (frontend) -- (agentos);
+\draw[arrow] (agentos) -- (services);
+\draw[arrow] (services) -- (external);
+
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% =============================================================================
+% SLAJD 4: Narzędzia agenta
+% =============================================================================
+\begin{frame}{Narzędzia agenta}
+\begin{center}
+\textbf{6 narzędzi agenta:}
+\vspace{0.5cm}
+
+\begin{enumerate}
+    \item \texttt{search\_division} -- wyszukiwanie lokalizacji
+    \vspace{0.3cm}
+    \item \texttt{get\_division} -- granice administracyjne
+    \vspace{0.3cm}
+    \item \texttt{get\_overture\_data} -- infrastruktura (MotherDuck)
+    \vspace{0.3cm}
+    \item \texttt{get\_flood\_forecast} -- dane powodziowe (GloFAS)
+    \vspace{0.3cm}
+    \item \texttt{intersect\_flood\_zones} -- analiza przecięć
+    \vspace{0.3cm}
+    \item \texttt{list\_layers} -- zarządzanie warstwami
+\end{enumerate}
+\end{center}
+\end{frame}
+
+% =============================================================================
+% SLAJD 5: Framework i źródła danych
+% =============================================================================
+\begin{frame}{Framework i~źródła danych}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{Framework Agno AgentOS:}
+\begin{itemize}
+    \item Automatyczne generowanie FastAPI
+    \item Przechowywanie sesji (SQLite)
+    \item Zarządzanie historią konwersacji
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Model LLM:}
+\begin{itemize}
+    \item Google Gemini 2.0 Flash
+    \item Rozumienie języka naturalnego
+    \item Długi kontekst (1M tokenów)
+\end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\textbf{Źródła danych:}
+\begin{itemize}
+    \item \textbf{OpenStreetMap}\\
+    Nominatim + Overpass\\
+    Granice administracyjne
+
+    \vspace{0.3cm}
+
+    \item \textbf{Overture Maps}\\
+    MotherDuck API\\
+    Infrastruktura
+
+    \vspace{0.3cm}
+
+    \item \textbf{Copernicus GloFAS}\\
+    Climate Data Store\\
+    Prognozy powodziowe
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% =============================================================================
+% SLAJD 6: Klasyfikacja ryzyka
+% =============================================================================
+\begin{frame}{Klasyfikacja ryzyka powodziowego}
+\begin{center}
+\begin{block}{Trójstopniowa skala oparta na danych GloFAS}
+\vspace{0.3cm}
+\begin{itemize}
+    \item \textbf{Niskie} -- klasy głębokości 1--2 (0--1~m)
+    \vspace{0.3cm}
+    \item \textbf{Średnie} -- klasa głębokości 3 (1--2~m)
+    \vspace{0.3cm}
+    \item \textbf{Wysokie} -- klasy głębokości 4--5 (>2~m)
+\end{itemize}
+\vspace{0.3cm}
+\end{block}
+\end{center}
+\end{frame}
+
+% =============================================================================
+% SLAJD 7: Wyniki testów
+% =============================================================================
+\begin{frame}{Wyniki testów}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{Testy funkcjonalne (20 scenariuszy):}
+\begin{itemize}
+    \item Wynik: \textbf{19/20 PASS (95\%)}
+    \item Kategorie: healthcare, education, buildings, transportation
+    \item Lokalizacje: 20 miast w~Europie Środkowej
+    \item 1 błąd: Zurich (kanton zamiast miasta)
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Testy interpretacji NL (25 zapytań):}
+\begin{itemize}
+    \item Wynik: \textbf{21/25 (84\%)}
+    \item Zapytania proste: 100\% (15/15)
+    \item Zapytania złożone: 60\% (6/10)
+    \item Benchmark: 76--87\% \textcolor{green}{$\checkmark$}
+\end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\textbf{Testy wydajnościowe:}
+\begin{itemize}
+    \item Średni czas: \textbf{14.2~s}
+    \item Min: 8.4~s, Max: 23.1~s
+    \item 90\% $\leq$ 30~s \textcolor{green}{(RN-01 $\checkmark$)}
+    \item Rozkład czasu:
+    \begin{itemize}
+        \item Overture: 60\%
+        \item GloFAS: 20\%
+        \item Analiza: 18\%
+        \item OSM: 2\%
+    \end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+
+\textbf{Przykłady (rozkład ryzyka):}
+\begin{itemize}
+    \item \textbf{Genewa:} 47 szpitali\\12 w~ryzyku: 7 N / 3 Ś / 2 W
+    \item \textbf{Warszawa:} 892 szkoły\\67 w~ryzyku: 41 N / 18 Ś / 8 W
+    \item \textbf{Kraków:} 15,847 budynków\\2,134 w~ryzyku: 1,456 N / 512 Ś / 166 W
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% =============================================================================
+% SLAJD 8: Wnioski i zakończenie
+% =============================================================================
+\begin{frame}{Wnioski}
+\textbf{Osiągnięcia:}
+\begin{itemize}
+    \item Udana implementacja systemu analizy ryzyka powodziowego z~agentem AI
+    \item Wysoka jakość interpretacji języka naturalnego (84\% vs 76--87\% benchmark)
+    \item Pełna integracja z~3 źródłami danych (OSM, Overture Maps, GloFAS)
+    \item 95\% testów funkcjonalnych zakończonych sukcesem
+\end{itemize}
+
+\vspace{1cm}
+
+\begin{center}
+\Large \textbf{Dziękuję za uwagę}
+\end{center}
+\end{frame}
+
+\end{document}

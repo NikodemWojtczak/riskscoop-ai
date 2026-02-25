@@ -1,0 +1,149 @@
+\section*{Cel i~zakres pracy}
+\addcontentsline{toc}{section}{Cel i~zakres pracy}
+\label{chap:cel}
+
+\subsection*{Cel główny pracy}
+
+Celem pracy jest zaprojektowanie i~zaimplementowanie prototypu aplikacji webowej RiskScoop AI -- systemu analizy ryzyka powodziowego dla infrastruktury krytycznej, wykorzystującego agenta AI do przetwarzania zapytań w~języku naturalnym i~generowania analiz geoprzestrzennych. System ma zastosowanie w~obszarze Rapid Mapping, łącząc interfejs języka naturalnego z~oceną ryzyka powodziowego.
+
+\subsection*{Cele szczegółowe}
+
+W~ramach realizacji celu głównego wyznaczono następujące cele szczegółowe:
+
+\begin{enumerate}
+    \item \textbf{Analiza literatury} obejmująca:
+    \begin{itemize}
+        \item metody uczenia maszynowego w~ocenie ryzyka powodziowego,
+        \item agentów AI wykorzystujących interfejs języka naturalnego w~analizie geoprzestrzennej (ChatGeoAI, LLM-Find, GeoGPT),
+        \item systemy Rapid Mapping oraz Copernicus GloFAS,
+        \item otwarte dane geoprzestrzenne (Overture Maps Foundation),
+        \item technologie front-end dla aplikacji webowych (Mapbox GL JS).
+    \end{itemize}
+
+    \item \textbf{Przeprowadzenie analizy konkurencyjnych rozwiązań} na rynku systemów analizy geoprzestrzennej z~interfejsem języka naturalnego oraz platform specjalizujących się w~ocenie ryzyka powodziowego, w~celu identyfikacji luk rynkowych i~możliwości dla RiskScoop AI.
+
+    \item \textbf{Zaprojektowanie architektury systemu} RiskScoop AI obejmującej:
+    \begin{itemize}
+        \item komponent agenta AI do przetwarzania języka naturalnego,
+        \item moduł integracji z~bazą Overture Maps,
+        \item moduł integracji z~systemem Copernicus GloFAS,
+        \item moduł kwantyfikacji ryzyka powodziowego,
+        \item interfejs użytkownika z~interaktywną wizualizacją mapową.
+    \end{itemize}
+
+    \item \textbf{Zaimplementowanie prototypu systemu} wykorzystującego:
+    \begin{itemize}
+        \item Vanilla JavaScript i~Mapbox GL JS do wizualizacji geoprzestrzennej,
+        \item backend obsługujący przetwarzanie zapytań i~operacje geoprzestrzenne,
+        \item integrację z~modelami języka naturalnego (LLM).
+    \end{itemize}
+
+    \item \textbf{Przeprowadzenie testów funkcjonalnych i~wydajnościowych} zaimplementowanego prototypu, weryfikujących:
+    \begin{itemize}
+        \item poprawność interpretacji zapytań w~języku naturalnym,
+        \item dokładność identyfikacji obiektów infrastrukturalnych,
+        \item poprawność kwantyfikacji ryzyka powodziowego,
+        \item wydajność systemu przy różnych obciążeniach.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Zakres funkcjonalny systemu}
+
+System RiskScoop AI realizuje następujący zakres funkcjonalny:
+
+\paragraph{Przetwarzanie języka naturalnego}
+System przyjmuje zapytania użytkownika w~języku naturalnym dotyczące konkretnych lokalizacji oraz typów obiektów infrastrukturalnych (szpitale, drogi, mosty, szkoły, obiekty użyteczności publicznej). Agent AI automatycznie tłumaczy zapytania na operacje geoprzestrzenne, identyfikując:
+\begin{itemize}
+    \item typ infrastruktury (kategoria obiektu),
+    \item obszar geograficzny (miasto, województwo, kraj),
+    \item intencję użytkownika (identyfikacja zagrożonych obiektów, kwantyfikacja ryzyka).
+\end{itemize}
+
+Przykładowe zapytania obsługiwane przez system:
+\begin{itemize}
+    \item ,,Które szpitale w~Warszawie są zagrożone powodzią?'',
+    \item ,,Pokaż drogi krajowe w~strefie wysokiego ryzyka powodziowego w~województwie małopolskim'',
+    \item ,,Ile szkół podstawowych znajduje się w~obszarze zagrożenia powodziowego w~Krakowie?''.
+\end{itemize}
+
+\paragraph{Integracja źródeł danych}
+\begin{itemize}
+    \item \textbf{Overture Maps:} Baza danych infrastrukturalnych zawierająca informacje o~budynkach, punktach użyteczności publicznej (POI), sieci transportowej oraz granicach administracyjnych. System wykorzystuje tematyczne warstwy danych (Buildings, Places, Transportation, Admins) do identyfikacji obiektów infrastruktury krytycznej.
+
+    \item \textbf{Copernicus GloFAS:} Globalny System Świadomości Powodzi dostarczający dane o~zagrożeniu powodziowym, w~tym prognozy przepływu rzek oraz mapy zasięgu potencjalnych powodzi. System integruje dane GloFAS w~celu określenia poziomu zagrożenia dla zidentyfikowanych obiektów.
+\end{itemize}
+
+\paragraph{Kwantyfikacja ryzyka powodziowego}
+System klasyfikuje ryzyko powodziowe dla zidentyfikowanych obiektów infrastrukturalnych na podstawie danych z~Copernicus GloFAS. Klasy głębokości zalania (1--5) z~map zagrożenia powodziowego są mapowane na trójstopniową skalę ryzyka: niskie, średnie, wysokie. Dla każdego obiektu system wyznacza poziom ryzyka poprzez analizę przecięć przestrzennych z~punktami powodziowymi w~zadanym buforze odległości.
+
+\paragraph{Wizualizacja wyników}
+System prezentuje wyniki analizy na interaktywnej mapie wykorzystującej bibliotekę Mapbox GL JS, oferując:
+\begin{itemize}
+    \item kodowanie kolorystyczne obiektów według poziomu ryzyka,
+    \item warstwy danych o~zagrożeniu powodziowym (GloFAS),
+    \item szczegółowe informacje o~każdym zidentyfikowanym obiekcie (nazwa, typ, adres, poziom ryzyka),
+    \item funkcje filtrowania i~wyszukiwania wyników,
+    \item interaktywną nawigację i~kontrolę powiększenia mapy.
+\end{itemize}
+
+\paragraph{Interfejs użytkownika}
+Aplikacja webowa zapewnia responsywny interfejs dostępny przez przeglądarkę internetową, składający się z:
+\begin{itemize}
+    \item pola wprowadzania zapytania w~języku naturalnym,
+    \item panelu wyników z~listą zidentyfikowanych obiektów,
+    \item interaktywnej mapy z~wizualizacją ryzyka,
+    \item panelu szczegółów obiektu z~informacjami o~poziomie zagrożenia.
+\end{itemize}
+
+\subsection*{Zakres implementacyjny}
+
+Implementacja systemu obejmuje:
+
+\begin{itemize}
+    \item \textbf{Frontend:} Aplikacja jednostronicowa (SPA) zbudowana w~czystym JavaScript (Vanilla JS), wykorzystująca Mapbox GL JS do wizualizacji map oraz komunikację z~backendem przez REST API.
+
+    \item \textbf{Backend:} Serwer aplikacyjny obsługujący:
+    \begin{itemize}
+        \item przetwarzanie zapytań w~języku naturalnym z~wykorzystaniem modeli LLM,
+        \item operacje geoprzestrzenne (zapytania przestrzenne, analiza zasięgu),
+        \item integrację z~API Overture Maps i~Copernicus GloFAS,
+        \item algorytmy kwantyfikacji ryzyka powodziowego,
+        \item udostępnianie wyników analizy w~formacie GeoJSON.
+    \end{itemize}
+
+    \item \textbf{Integracje:} Połączenia z~zewnętrznymi źródłami danych oraz usługami AI umożliwiającymi interpretację języka naturalnego i~tłumaczenie na operacje geoprzestrzenne.
+\end{itemize}
+
+\subsection*{Ograniczenia zakresu}
+
+Zakres pracy nie obejmuje:
+\begin{itemize}
+    \item Tworzenia własnych modeli predykcyjnych ryzyka powodziowego -- system wykorzystuje istniejące dane z~GloFAS.
+    \item Implementacji systemu wczesnego ostrzegania w~czasie rzeczywistym -- prototyp koncentruje się na analizie zapytań ad-hoc.
+    \item Pokrycia wszystkich kategorii infrastruktury krytycznej -- system obsługuje wybrane kategorie demonstracyjne (służba zdrowia, transport, edukacja).
+    \item Wdrożenia produkcyjnego systemu -- rezultatem pracy jest prototyp demonstracyjny (proof of concept).
+    \item Pełnej walidacji dokładności kwantyfikacji ryzyka z~danymi historycznymi -- weryfikacja ogranicza się do testów funkcjonalnych poprawności działania algorytmów.
+\end{itemize}
+
+\subsection*{Metodologia weryfikacji}
+
+Osiągnięcie celów pracy zostanie zweryfikowane poprzez:
+
+\begin{enumerate}
+    \item \textbf{Testy funkcjonalne:} Weryfikacja poprawności przetwarzania zapytań, identyfikacji obiektów oraz kwantyfikacji ryzyka dla zestawu zapytań testowych.
+
+    \item \textbf{Testy wydajnościowe:} Pomiar czasu odpowiedzi systemu dla zapytań o~różnym stopniu złożoności oraz różnej liczbie zidentyfikowanych obiektów.
+
+    \item \textbf{Analiza porównawcza:} Ocena pozycjonowania RiskScoop AI względem istniejących rozwiązań pod kątem funkcjonalności oraz dostępności.
+
+    \item \textbf{Demonstracja prototypu:} Prezentacja działającego systemu obsługującego przykładowe zapytania dla wybranych obszarów geograficznych.
+\end{enumerate}
+
+Kryteria sukcesu obejmują:
+\begin{itemize}
+    \item System poprawnie interpretuje co najmniej 80\% zapytań testowych w~języku naturalnym.
+    \item System identyfikuje obiekty infrastrukturalne zgodnie z~danymi Overture Maps.
+    \item System kwantyfikuje ryzyko powodziowe w~oparciu o~dane GloFAS.
+    \item Interfejs użytkownika umożliwia intuicyjne przeglądanie i~filtrowanie wyników.
+    \item Czas odpowiedzi systemu nie przekracza 30 sekund dla typowych zapytań.
+\end{itemize}

@@ -1,0 +1,564 @@
+\section{Projekt systemu RiskScoop AI}
+\label{chap:projekt}
+
+Rozdział opisuje projekt systemu RiskScoop AI -- narzędzia do analizy ryzyka powodziowego z~wykorzystaniem agenta AI.
+
+\subsection{Wymagania systemowe}
+
+\subsubsection{Wymagania funkcjonalne}
+
+Na podstawie analizy literatury oraz luki rynkowej zdefiniowano wymagania funkcjonalne (tab.~\ref{tab:wymagania_funkcjonalne}).
+
+\begin{table}[H]
+    \centering
+    \caption{Wymagania funkcjonalne systemu (opracowanie własne)}
+    \begin{tabular}{|c|p{10cm}|}
+        \hline
+        \textbf{ID} & \textbf{Opis wymagania} \\
+        \hline
+        RF-01 & System musi umożliwiać zadawanie pytań w~języku naturalnym \\
+        \hline
+        RF-02 & Agent musi automatycznie pobierać granice administracyjne z~OSM \\
+        \hline
+        RF-03 & System musi pobierać dane powodziowe z~Copernicus GloFAS \\
+        \hline
+        RF-04 & System musi pobierać dane o~infrastrukturze z~Overture Maps \\
+        \hline
+        RF-05 & System musi wykonywać analizę przecięć przestrzennych \\
+        \hline
+        RF-06 & System musi klasyfikować obiekty według poziomu ryzyka \\
+        \hline
+        RF-07 & Wyniki muszą być prezentowane na interaktywnej mapie \\
+        \hline
+        RF-08 & System musi zachowywać kontekst konwersacji \\
+        \hline
+    \end{tabular}
+    \label{tab:wymagania_funkcjonalne}
+\end{table}
+
+\subsubsection{Wymagania niefunkcjonalne}
+
+\begin{table}[H]
+    \centering
+    \caption{Wymagania niefunkcjonalne systemu (opracowanie własne)}
+    \begin{tabular}{|c|p{10cm}|}
+        \hline
+        \textbf{ID} & \textbf{Opis wymagania} \\
+        \hline
+        RN-01 & Czas odpowiedzi na zapytanie nie powinien przekraczać 30~s \\
+        \hline
+        RN-02 & Wskaźnik poprawnej interpretacji zapytań $\geq$ 80\% \\
+        \hline
+        RN-03 & Interfejs musi być responsywny (desktop i~mobile) \\
+        \hline
+        RN-04 & System musi działać w~przeglądarce bez instalacji \\
+        \hline
+    \end{tabular}
+    \label{tab:wymagania_niefunkcjonalne}
+\end{table}
+
+\subsection{Architektura systemu}
+
+\subsubsection{Architektura wysokopoziomowa}
+
+System RiskScoop AI został zaprojektowany w~architekturze trójwarstwowej z~wykorzystaniem wzorca AgentOS (rys.~\ref{fig:architektura}).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        layer/.style={draw, rounded corners, minimum width=12cm, minimum height=1.4cm, align=center},
+        arrow/.style={-{Stealth[length=2.5mm]}, thick}
+    ]
+
+    % User
+    \node[font=\small] (user) {\textbf{Użytkownik} (przeglądarka)};
+
+    % Layer 1: Frontend
+    \node[layer, fill=blue!15, below=0.5cm of user] (frontend) {
+        \textbf{Warstwa prezentacji}\\[2pt]
+        \footnotesize Vanilla JS \quad Mapbox GL JS \quad ChatPanel \quad LayerPanel
+    };
+
+    % Layer 2: AgentOS
+    \node[layer, fill=green!15, below=0.5cm of frontend] (agentos) {
+        \textbf{Warstwa AgentOS}\\[2pt]
+        \footnotesize FastAPI \quad Gemini 3 Pro \quad 6 Tools \quad SQLite
+    };
+
+    % Layer 3: Services
+    \node[layer, fill=orange!15, below=0.5cm of agentos] (services) {
+        \textbf{Warstwa serwisów}\\[2pt]
+        \footnotesize Nominatim \quad Overture \quad GloFAS \quad Layer
+    };
+
+    % Layer 4: External Data
+    \node[layer, fill=red!15, below=0.5cm of services] (external) {
+        \textbf{Dane zewnętrzne}\\[2pt]
+        \footnotesize OpenStreetMap \quad Overture Maps \quad Copernicus CDS \quad GeoJSON
+    };
+
+    % Arrows
+    \draw[arrow] (user) -- (frontend);
+    \draw[arrow] (frontend) -- (agentos);
+    \draw[arrow] (agentos) -- (services);
+    \draw[arrow] (services) -- (external);
+
+    \end{tikzpicture}
+    \caption{Architektura systemu RiskScoop AI (opracowanie własne)}
+    \label{fig:architektura}
+\end{figure}
+
+Architektura składa się z~następujących warstw:
+
+\begin{enumerate}
+    \item \textbf{warstwa prezentacji} -- aplikacja webowa z~mapą Mapbox GL JS,
+    \item \textbf{warstwa AgentOS} -- automatycznie generowane API FastAPI z~agentem Gemini,
+    \item \textbf{warstwa serwisów} -- NominatimService, OvertureService, GloFASService, LayerService,
+    \item \textbf{warstwa danych} -- zewnętrzne źródła: OpenStreetMap, Overture Maps API, Copernicus CEMS.
+\end{enumerate}
+
+\subsubsection{Wzorzec AgentOS}
+
+AgentOS to wzorzec architektoniczny z~frameworka Agno, który automatycznie generuje aplikację FastAPI na podstawie definicji agenta. Wzorzec obejmuje:
+
+\begin{itemize}
+    \item automatyczne endpointy REST dla komunikacji z~agentem,
+    \item wbudowany interfejs Playground do testowania,
+    \item persystencję sesji w~bazie SQLite,
+    \item zarządzanie historią konwersacji.
+\end{itemize}
+
+\subsubsection{Diagram komponentów}
+
+Rysunek~\ref{fig:komponenty} przedstawia diagram komponentów systemu.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        component/.style={draw, rounded corners, minimum width=1.6cm, minimum height=0.7cm, align=center, font=\tiny},
+        package/.style={draw, rounded corners, align=center},
+        arrow/.style={-{Stealth[length=2mm]}, thick}
+    ]
+
+    % Agent component (center top)
+    \node[component, fill=green!30, minimum width=2.2cm, font=\scriptsize] (agent) at (0,0) {\textbf{Agent}\\Gemini 3 Pro};
+
+    % Tools package
+    \node[package, fill=blue!10, minimum width=10cm, minimum height=1.2cm] (toolspkg) at (0,-1.8) {};
+    \node[component, fill=blue!25] at (-3.6,-1.8) (t1) {search\_division};
+    \node[component, fill=blue!25] at (-1.8,-1.8) (t2) {get\_division};
+    \node[component, fill=blue!25] at (0,-1.8) (t3) {get\_overture};
+    \node[component, fill=blue!25] at (1.8,-1.8) (t4) {get\_flood};
+    \node[component, fill=blue!25] at (3.6,-1.8) (t5) {intersect\_flood};
+
+    % Services package
+    \node[package, fill=orange!10, minimum width=10cm, minimum height=1.2cm] (svcpkg) at (0,-3.8) {};
+    \node[component, fill=orange!25] at (-3.4,-3.8) (s1) {Nominatim};
+    \node[component, fill=orange!25] at (-1.2,-3.8) (s2) {Overture};
+    \node[component, fill=orange!25] at (1.2,-3.8) (s3) {GloFAS};
+    \node[component, fill=orange!25] at (3.4,-3.8) (s4) {Layer};
+
+    % External APIs
+    \node[package, fill=red!10, minimum width=10cm, minimum height=1.2cm] (extpkg) at (0,-5.8) {};
+    \node[component, fill=red!25] at (-2.5,-5.8) (e1) {OpenStreetMap};
+    \node[component, fill=red!25] at (0,-5.8) (e2) {MotherDuck};
+    \node[component, fill=red!25] at (2.5,-5.8) (e3) {Copernicus};
+
+    % Labels on left
+    \node[font=\footnotesize\bfseries, anchor=east] at (-5.3,-1.8) {Tools};
+    \node[font=\footnotesize\bfseries, anchor=east] at (-5.3,-3.8) {Services};
+    \node[font=\footnotesize\bfseries, anchor=east] at (-5.3,-5.8) {External APIs};
+
+    % Simple vertical arrows
+    \draw[arrow] (0,-0.45) -- (0,-1.2);
+    \draw[arrow] (0,-2.4) -- (0,-3.2);
+    \draw[arrow] (0,-4.4) -- (0,-5.2);
+
+    \end{tikzpicture}
+    \caption{Diagram komponentów systemu (opracowanie własne)}
+    \label{fig:komponenty}
+\end{figure}
+
+\subsection{Projekt agenta AI}
+
+\subsubsection{Model językowy}
+
+Agent wykorzystuje model Google Gemini 3 Pro wybrany ze względu na:
+\begin{itemize}
+    \item wysoką jakość rozumienia języka naturalnego,
+    \item natywne wsparcie w~frameworku Agno,
+    \item zdolność do generowania strukturyzowanych odpowiedzi (JSON),
+    \item obsługę długiego kontekstu (do 1M tokenów).
+\end{itemize}
+
+\subsubsection{Instrukcje systemowe}
+
+Agent otrzymuje szczegółowe instrukcje systemowe definiujące:
+\begin{itemize}
+    \item rolę eksperta od analizy ryzyka powodziowego,
+    \item dostępne narzędzia i~ich przeznaczenie,
+    \item schematy danych Overture Maps (tabele, kolumny),
+    \item workflow analizy ryzyka (sekwencja kroków),
+    \item format odpowiedzi dla użytkownika.
+\end{itemize}
+
+\subsubsection{Persystencja sesji}
+
+Sesje użytkowników są przechowywane w~bazie SQLite z~następującymi danymi:
+\begin{itemize}
+    \item historia konwersacji (ostatnie 5 odpowiedzi),
+    \item referencje do utworzonych warstw (UUID),
+    \item podsumowanie sesji generowane przez agenta.
+\end{itemize}
+
+\subsection{Projekt narzędzi agenta}
+
+Agent posiada 6 wyspecjalizowanych narzędzi (tab.~\ref{tab:narzedzia_szczegoly}).
+
+\begin{table}[H]
+    \centering
+    \caption{Specyfikacja narzędzi agenta (opracowanie własne)}
+    \begin{tabular}{|l|p{4cm}|p{4cm}|p{3cm}|}
+        \hline
+        \textbf{Narzędzie} & \textbf{Wejście} & \textbf{Wyjście} & \textbf{Źródło danych} \\
+        \hline
+        search\_division & nazwa lokalizacji & lista wyników z~ID & Nominatim API \\
+        \hline
+        get\_division & ID lokalizacji, nazwa warstwy & warstwa GeoJSON & Overpass API \\
+        \hline
+        get\_overture\_data & warstwa AOI, kategoria, nazwa & warstwa GeoJSON & Overture API \\
+        \hline
+        get\_flood\_forecast & warstwa AOI, nazwa wyjściowa & warstwa GeoJSON & GloFAS API \\
+        \hline
+        intersect\_flood\_zones & warstwa obiektów, warstwa flood & warstwa z~ryzykiem & GeoPandas \\
+        \hline
+        list\_layers & -- & lista warstw sesji & LayerService \\
+        \hline
+    \end{tabular}
+    \label{tab:narzedzia_szczegoly}
+\end{table}
+
+\subsubsection{Narzędzie search\_division}
+
+Wyszukuje lokalizacje geograficzne w~bazie Nominatim. Dla niejednoznacznych zapytań (np. ,,Geneva'' -- miasto vs kanton w~Szwajcarii) zwraca listę wyników do wyboru przez użytkownika.
+
+Parametry wejściowe:
+\begin{itemize}
+    \item \texttt{query} -- nazwa lokalizacji (string)
+\end{itemize}
+
+Przykładowa odpowiedź:
+\begin{verbatim}
+Found 2 results for "Geneva":
+1. Geneva, Switzerland (city, population: 201,818)
+2. Canton of Geneva, Switzerland (canton)
+\end{verbatim}
+
+\subsubsection{Narzędzie get\_division}
+
+Pobiera dokładne granice administracyjne z~OpenStreetMap Overpass API. Tworzy warstwę GeoJSON służącą jako obszar zainteresowania (AOI) dla kolejnych zapytań.
+
+Parametry wejściowe:
+\begin{itemize}
+    \item \texttt{location\_name} -- nazwa lokalizacji
+    \item \texttt{output\_layer\_name} -- nazwa warstwy wyjściowej
+\end{itemize}
+
+Narzędzie implementuje algorytm \texttt{assemble\_rings} do rekonstrukcji wielokątów z~fragmentów OSM (opisany w~rozdziale~\ref{chap:implementacja}).
+
+\subsubsection{Narzędzie get\_overture\_data}
+
+Pobiera dane z~Overture Maps przez dedykowane API. Dostępne kategorie obiektów:
+\begin{itemize}
+    \item \textbf{healthcare} -- szpitale, kliniki, apteki,
+    \item \textbf{education} -- szkoły, uniwersytety, przedszkola,
+    \item \textbf{transportation} -- stacje, dworce, porty,
+    \item \textbf{public\_service} -- straż pożarna, policja, urzędy,
+    \item \textbf{buildings} -- wszystkie budynki w~obszarze.
+\end{itemize}
+
+Parametry wejściowe:
+\begin{itemize}
+    \item \texttt{aoi\_layer\_name} -- nazwa warstwy AOI
+    \item \texttt{category} -- kategoria obiektów
+    \item \texttt{output\_layer\_name} -- nazwa warstwy wyjściowej
+\end{itemize}
+
+\subsubsection{Narzędzie get\_flood\_forecast}
+
+Pobiera dane o~zagrożeniu powodziowym z~Copernicus GloFAS. Dane rastrowe są konwertowane na punkty z~przypisaną klasą głębokości (1--5) i~poziomem ryzyka.
+
+Parametry wejściowe:
+\begin{itemize}
+    \item \texttt{aoi\_layer\_name} -- nazwa warstwy AOI,
+    \item \texttt{output\_layer\_name} -- nazwa warstwy wyjściowej.
+\end{itemize}
+
+Mapowanie klas na poziomy ryzyka:
+\begin{itemize}
+    \item klasa 1--2 (0--1~m): ryzyko niskie/średnie,
+    \item klasa 3--5 (>1~m): ryzyko wysokie.
+\end{itemize}
+
+\subsubsection{Narzędzie intersect\_flood\_zones}
+
+Wykonuje analizę przecięć przestrzennych między obiektami infrastruktury a~strefami zagrożenia powodziowego.
+
+Parametry wejściowe:
+\begin{itemize}
+    \item \texttt{features\_layer\_name} -- warstwa z~obiektami
+    \item \texttt{flood\_layer\_name} -- warstwa z~danymi powodziowymi
+    \item \texttt{output\_layer\_name} -- nazwa warstwy wyjściowej
+    \item \texttt{buffer\_meters} -- bufor wokół obiektów (domyślnie 100~m)
+\end{itemize}
+
+Algorytm:
+\begin{enumerate}
+    \item buforowanie obiektów o~zadaną odległość,
+    \item spatial join z~punktami powodziowymi,
+    \item agregacja maksymalnego poziomu ryzyka dla każdego obiektu,
+    \item filtrowanie obiektów według minimalnego poziomu ryzyka.
+\end{enumerate}
+
+\subsection{Projekt przepływu pracy}
+
+\subsubsection{Diagram sekwencji}
+
+Rysunek~\ref{fig:sekwencja} przedstawia diagram sekwencji dla typowego zapytania.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        actor/.style={draw, minimum width=1.6cm, minimum height=0.7cm, align=center, font=\footnotesize},
+        message/.style={-{Stealth[length=2mm]}},
+        return/.style={-{Stealth[length=2mm]}, dashed}
+    ]
+
+    % Actors - positioned with coordinates
+    \node[actor, fill=yellow!30] (user) at (0,0) {Użytkownik};
+    \node[actor, fill=blue!20] (frontend) at (2.5,0) {Frontend};
+    \node[actor, fill=green!20] (agent) at (5,0) {AgentOS};
+    \node[actor, fill=orange!20] (tools) at (7.5,0) {Tools};
+    \node[actor, fill=red!20] (apis) at (10,0) {APIs};
+
+    % Lifelines
+    \draw[dashed, gray] (0,-0.4) -- (0,-8);
+    \draw[dashed, gray] (2.5,-0.4) -- (2.5,-8);
+    \draw[dashed, gray] (5,-0.4) -- (5,-8);
+    \draw[dashed, gray] (7.5,-0.4) -- (7.5,-8);
+    \draw[dashed, gray] (10,-0.4) -- (10,-8);
+
+    % Messages - horizontal arrows
+    \draw[message] (0,-1) -- node[above, font=\scriptsize] {1. zapytanie} (2.5,-1);
+    \draw[message] (2.5,-1.8) -- node[above, font=\scriptsize] {2. POST /chat} (5,-1.8);
+    \draw[message] (5,-2.6) -- node[above, font=\scriptsize] {3. search\_division} (7.5,-2.6);
+    \draw[message] (7.5,-3.2) -- node[above, font=\scriptsize] {4. Nominatim} (10,-3.2);
+    \draw[return] (10,-3.7) -- (7.5,-3.7);
+    \draw[message] (5,-4.3) -- node[above, font=\scriptsize] {5. get\_flood} (7.5,-4.3);
+    \draw[message] (7.5,-4.9) -- node[above, font=\scriptsize] {6. GloFAS} (10,-4.9);
+    \draw[return] (10,-5.4) -- (7.5,-5.4);
+    \draw[message] (5,-6) -- node[above, font=\scriptsize] {7. intersect} (7.5,-6);
+    \draw[return] (7.5,-6.5) -- node[above, font=\scriptsize] {8. GeoJSON} (5,-6.5);
+    \draw[return] (5,-7.1) -- node[above, font=\scriptsize] {9. response} (2.5,-7.1);
+    \draw[return] (2.5,-7.6) -- node[above, font=\scriptsize] {10. wynik} (0,-7.6);
+
+    \end{tikzpicture}
+    \caption{Diagram sekwencji dla zapytania o~ryzyko powodziowe (opracowanie własne)}
+    \label{fig:sekwencja}
+\end{figure}
+
+\subsubsection{Fazy analizy}
+
+Typowa analiza ryzyka powodziowego przebiega w~trzech fazach:
+
+\textbf{Faza 1 -- Utworzenie AOI}
+\begin{enumerate}
+    \item agent wywołuje \texttt{search\_division} dla lokalizacji z~zapytania,
+    \item jeśli wyniki niejednoznaczne -- agent pyta użytkownika o~wybór,
+    \item agent wywołuje \texttt{get\_division} dla wybranej lokalizacji,
+    \item utworzona warstwa AOI służy jako filtr dla kolejnych zapytań.
+\end{enumerate}
+
+\textbf{Faza 2 -- Pobranie danych}
+\begin{enumerate}
+    \item agent wywołuje \texttt{get\_overture\_data} dla kategorii z~zapytania,
+    \item agent wywołuje \texttt{get\_flood\_forecast} dla AOI,
+    \item obie operacje mogą być wykonane równolegle.
+\end{enumerate}
+
+\textbf{Faza 3 -- Analiza i~raport}
+\begin{enumerate}
+    \item agent wywołuje \texttt{intersect\_flood\_zones},
+    \item agent generuje podsumowanie z~liczbą obiektów i~rozkładem ryzyka,
+    \item frontend wyświetla warstwy na mapie.
+\end{enumerate}
+
+\subsection{Projekt modelu ryzyka}
+
+\subsubsection{Klasyfikacja ryzyka}
+
+System implementuje trójstopniową klasyfikację ryzyka (tab.~\ref{tab:klasyfikacja_ryzyka}).
+
+\begin{table}[H]
+    \centering
+    \caption{Klasyfikacja poziomu ryzyka (opracowanie własne)}
+    \begin{tabular}{|l|c|l|l|}
+        \hline
+        \textbf{Poziom} & \textbf{Klasy GloFAS} & \textbf{Głębokość} & \textbf{Kolor na mapie} \\
+        \hline
+        Niski & 1 & 0--0,5~m & Zielony \\
+        \hline
+        Średni & 2 & 0,5--1~m & Pomarańczowy \\
+        \hline
+        Wysoki & 3--5 & >1~m & Czerwony \\
+        \hline
+    \end{tabular}
+    \label{tab:klasyfikacja_ryzyka}
+\end{table}
+
+\subsubsection{Algorytm agregacji}
+
+Dla obiektów przecinających się z~wieloma punktami powodziowymi, system agreguje maksymalny poziom ryzyka:
+
+\begin{equation}
+    R_{obiekt} = \max_{i \in przecięcia}(R_i)
+\end{equation}
+
+gdzie $R_i$ to poziom ryzyka i-tego punktu powodziowego przecinającego bufor obiektu.
+
+\subsection{Projekt interfejsu użytkownika}
+
+\subsubsection{Komponenty UI}
+
+Interfejs użytkownika składa się z~czterech głównych komponentów (rys.~\ref{fig:ui_projekt}):
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        panel/.style={draw, thick, align=center},
+        label/.style={font=\footnotesize\bfseries}
+    ]
+
+    % Main container
+    \draw[thick] (0,0) rectangle (12,7);
+
+    % Header
+    \draw[thick, fill=gray!20] (0,6.5) rectangle (12,7);
+    \node[font=\small\bfseries] at (6,6.75) {RiskScoop AI};
+
+    % Left panel - Chat (width 3cm)
+    \draw[thick, fill=blue!10] (0,0) rectangle (3,6.5);
+    \node[label] at (1.5,6.2) {Panel czatu};
+
+    % Chat messages
+    \draw[fill=gray!20, rounded corners] (0.2,5.2) rectangle (2.8,5.8);
+    \node[font=\tiny] at (1.5,5.5) {Jakie szpitale w Genewie...};
+    \draw[fill=green!20, rounded corners] (0.2,4.4) rectangle (2.8,5.0);
+    \node[font=\tiny] at (1.5,4.7) {Znaleziono 47 szpitali...};
+
+    % Input field
+    \draw[fill=white] (0.2,0.2) rectangle (2.8,0.8);
+    \node[font=\tiny, gray] at (1.5,0.5) {Wpisz zapytanie...};
+
+    % Center panel - Map (width 6cm)
+    \draw[thick, fill=green!5] (3,0) rectangle (9,6.5);
+    \node[label] at (6,6.2) {Mapa interaktywna};
+
+    % Map content simulation
+    \draw[fill=blue!20, rounded corners=2pt] (3.5,1) rectangle (8.5,5.5);
+    \node[font=\tiny] at (6,5.2) {Mapbox GL JS};
+
+    % Markers
+    \fill[red] (5,3) circle (0.1);
+    \fill[orange] (6,4) circle (0.1);
+    \fill[green!70!black] (7,2.5) circle (0.1);
+    \fill[red] (4.5,4.2) circle (0.1);
+    \fill[green!70!black] (7.5,3.5) circle (0.1);
+
+    % Zoom controls
+    \draw[fill=white] (8.2,4.8) rectangle (8.4,5.3);
+    \node[font=\tiny] at (8.3,5.15) {+};
+    \node[font=\tiny] at (8.3,4.95) {--};
+
+    % Right panel - Layers (width 3cm)
+    \draw[thick, fill=orange!10] (9,0) rectangle (12,6.5);
+    \node[label] at (10.5,6.2) {Panel warstw};
+
+    % Layer items
+    \draw[fill=white, rounded corners] (9.2,5.2) rectangle (11.8,5.7);
+    \node[font=\tiny] at (10.5,5.45) {$\square$ geneva\_boundary};
+    \draw[fill=white, rounded corners] (9.2,4.6) rectangle (11.8,5.1);
+    \node[font=\tiny] at (10.5,4.85) {$\boxtimes$ hospitals};
+    \draw[fill=white, rounded corners] (9.2,4.0) rectangle (11.8,4.5);
+    \node[font=\tiny] at (10.5,4.25) {$\boxtimes$ flood\_zones};
+
+    % Details section
+    \draw[thick] (9,0) rectangle (12,3.5);
+    \node[label] at (10.5,3.2) {Szczegóły};
+    \node[font=\tiny, align=left] at (10.5,2.5) {Nazwa: Szpital HUG\\Ryzyko: wysokie\\Głębokość: 1.2m};
+
+    \end{tikzpicture}
+    \caption{Projekt interfejsu użytkownika (opracowanie własne)}
+    \label{fig:ui_projekt}
+\end{figure}
+
+\begin{enumerate}
+    \item \textbf{panel czatu} -- wprowadzanie zapytań, historia konwersacji, odpowiedzi agenta,
+    \item \textbf{mapa interaktywna} -- wizualizacja warstw GeoJSON z~Mapbox GL JS,
+    \item \textbf{panel warstw} -- lista warstw, przełączanie widoczności,
+    \item \textbf{panel szczegółów} -- informacje o~wybranym obiekcie.
+\end{enumerate}
+
+\subsubsection{Interakcje użytkownika}
+
+System obsługuje następujące interakcje:
+\begin{itemize}
+    \item wprowadzanie zapytań w~języku naturalnym,
+    \item klikanie obiektów na mapie -- wyświetlenie szczegółów,
+    \item przełączanie widoczności warstw,
+    \item zoom i~pan mapy,
+    \item eksport warstwy do GeoJSON.
+\end{itemize}
+
+\subsection{Projekt integracji ze źródłami danych}
+
+\subsubsection{OpenStreetMap / Nominatim}
+
+Integracja z~OSM obejmuje:
+\begin{itemize}
+    \item \textbf{Nominatim API} -- geokodowanie nazw lokalizacji,
+    \item \textbf{Overpass API} -- pobieranie geometrii granic administracyjnych.
+\end{itemize}
+
+OSM przechowuje granice jako oddzielne segmenty (ways), które muszą zostać złożone w~zamknięte wielokąty (szczegóły w~rozdziale~\ref{chap:implementacja}).
+
+\subsubsection{Overture Maps API}
+
+Dane Overture Maps są dostępne przez dedykowane API zwracające GeoJSON. Filtrowanie odbywa się przez:
+\begin{itemize}
+    \item bounding box obszaru AOI,
+    \item kategorię obiektów,
+    \item opcjonalne atrybuty (np. nazwa).
+\end{itemize}
+
+\subsubsection{Copernicus GloFAS}
+
+Dane GloFAS są pobierane w~formacie GeoTIFF i~konwertowane na punkty GeoJSON. Każdy piksel z~wartością 1--5 staje się punktem z~atrybutami:
+\begin{itemize}
+    \item \texttt{flood\_depth\_class} -- klasa głębokości (1--5),
+    \item \texttt{flood\_depth} -- opis słowny (np. ,,0.5--1m''),
+    \item \texttt{risk\_level} -- poziom ryzyka (low/medium/high).
+\end{itemize}
+
+\subsection{Podsumowanie projektu}
+
+Zaprojektowany system spełnia wszystkie zdefiniowane wymagania funkcjonalne i~niefunkcjonalne. Kluczowe decyzje projektowe:
+\begin{itemize}
+    \item wzorzec AgentOS z~frameworka Agno dla automatycznego API,
+    \item model Gemini 3 Pro dla rozumienia języka naturalnego,
+    \item 6 wyspecjalizowanych narzędzi agenta,
+    \item trójstopniowa klasyfikacja ryzyka,
+    \item integracja z~trzema źródłami danych (OSM, Overture, GloFAS),
+    \item responsywny interfejs z~mapą Mapbox.
+\end{itemize}
+

@@ -1,0 +1,116 @@
+\section{Przegląd literatury i~podstawy teoretyczne}
+\label{chap:pierwszy}
+
+Rozdział przedstawia przegląd literatury w~obszarach kluczowych dla systemu RiskScoop AI: agentów AI w~analizie geoprzestrzennej, systemów monitorowania powodzi oraz otwartych danych geoprzestrzennych.
+
+\subsection{Agenci sztucznej inteligencji w~analizie geoprzestrzennej}
+
+\subsubsection{Koncepcja agentów AI}
+
+Agenty sztucznej inteligencji definiuje się jako autonomiczne systemy zdolne do percepcji otoczenia, podejmowania decyzji oraz wykonywania działań~\cite{google2024geospatial}. W~kontekście analizy geoprzestrzennej, agenty AI pośredniczą między użytkownikiem formułującym zapytanie w~języku naturalnym a~złożonymi operacjami przetwarzania danych przestrzennych.
+
+Architektura współczesnych agentów geoprzestrzennych opiera się na trzech komponentach:
+\begin{itemize}
+    \item \textbf{Moduł percepcji} -- rozumienie języka naturalnego i~ekstrakcja parametrów
+    \item \textbf{Moduł rozumowania} -- planowanie sekwencji operacji geoprzestrzennych
+    \item \textbf{Moduł działania} -- wykonanie operacji i~generowanie wyników
+\end{itemize}
+
+\subsubsection{Przegląd istniejących frameworków}
+
+W~literaturze opisano kilka frameworków agentów AI dla analiz geoprzestrzennych. \textbf{ChatGeoAI}~\cite{li2024chatgeoai} wykorzystuje model Llama~2 do generowania kodu PyQGIS, osiągając wskaźnik sukcesu 76\%. \textbf{LLM-Find}~\cite{gong2024llmfind} specjalizuje się w~autonomicznym wyszukiwaniu danych geoprzestrzennych z~80--90\% skutecznością. \textbf{GeoGPT}~\cite{rao2024geogpt} oferuje kompleksowe podejście end-to-end do analiz przestrzennych. Najnowszy \textbf{GeoAgent}~\cite{li2024geoagent} integruje Monte Carlo Tree Search z~RAG, osiągając 87\% sukcesu.
+
+Tabela~\ref{tab:ai-agents-comparison} przedstawia porównanie frameworków.
+
+\begin{table}[H]
+    \centering
+    \caption{Porównanie frameworków agentów AI w~analizie geoprzestrzennej}
+    \begin{tabular}{|l|c|l|}
+        \hline
+        \textbf{Framework} & \textbf{Sukces} & \textbf{Innowacja} \\
+        \hline
+        ChatGeoAI & 76\% & NER + PyQGIS \\
+        \hline
+        LLM-Find & 80--90\% & Autonomiczne debugowanie \\
+        \hline
+        GeoAgent & 87\% & MCTS + RAG \\
+        \hline
+    \end{tabular}
+    \label{tab:ai-agents-comparison}
+\end{table}
+
+Żaden z~frameworków nie specjalizuje się w~analizie ryzyka powodziowego dla infrastruktury krytycznej.
+
+\subsubsection{Framework Agno}
+
+Do implementacji RiskScoop AI wybrano framework Agno~\cite{agno2024} ze względu na:
+\begin{itemize}
+    \item Wydajność -- instancjonowanie agenta w~3~$\mu$s (529× szybciej niż LangGraph)
+    \item Niskie zużycie pamięci -- 6.6~KiB na agenta
+    \item Wbudowaną integrację z~FastAPI (AgentOS)
+    \item Natywne wsparcie dla modeli Google Gemini
+\end{itemize}
+
+\subsection{Systemy monitorowania powodzi}
+
+\subsubsection{Copernicus GloFAS}
+
+Global Flood Awareness System (GloFAS) to operacyjny system monitorowania powodzi prowadzony przez Komisję Europejską~\cite{jrc2020glofas}. System bazuje na modelu hydrologicznym LISFLOOD oraz danych meteorologicznych ERA5, generując prognozy przepływu rzek na okres do 30 dni.
+
+GloFAS oferuje mapy zagrożenia powodziowego dla różnych okresów powrotnych (RP10, RP20, RP50, RP100), gdzie okres powrotny oznacza statystyczny czas między zdarzeniami o~określonej skali. Dane klasyfikowane są w~5 klasach głębokości zalania (tab.~\ref{tab:glofas_classes}).
+
+\begin{table}[H]
+    \centering
+    \caption{Klasy głębokości GloFAS~\cite{glofas2024}}
+    \begin{tabular}{|c|l|l|}
+        \hline
+        \textbf{Klasa} & \textbf{Głębokość} & \textbf{Charakterystyka} \\
+        \hline
+        1 & 0--0,5~m & Niskie zalanie \\
+        \hline
+        2 & 0,5--1~m & Zagrożenie dla pieszych \\
+        \hline
+        3 & 1--2~m & Zagrożenie dla budynków \\
+        \hline
+        4 & 2--5~m & Poważne zniszczenia \\
+        \hline
+        5 & >5~m & Katastrofalne zalanie \\
+        \hline
+    \end{tabular}
+    \label{tab:glofas_classes}
+\end{table}
+
+\subsubsection{Copernicus Rapid Mapping}
+
+Copernicus Emergency Management Service oferuje usługę Rapid Mapping dostarczającą mapy sytuacyjne w~ciągu kilku godzin od zgłoszenia~\cite{copernicus2024ems}. Średni czas dostawy pierwszej mapy wynosi 4,2 godziny. Usługa jest aktywowana na wniosek służb kryzysowych i~wykorzystuje obrazy satelitarne wysokiej rozdzielczości.
+
+\subsection{Otwarte dane geoprzestrzenne}
+
+\subsubsection{Overture Maps Foundation}
+
+Overture Maps Foundation~\cite{overture2024foundation} to inicjatywa Linux Foundation wspierana przez Amazon, Meta, Microsoft i~TomTom, udostępniająca otwarte dane geoprzestrzenne:
+\begin{itemize}
+    \item \textbf{Buildings} -- 2,6 miliarda budynków z~atrybutami (wysokość, funkcja)
+    \item \textbf{Places} -- 64 miliony POI z~kategoryzacją (szpitale, szkoły, transport)
+    \item \textbf{Transportation} -- 321 milionów segmentów drogowych
+    \item \textbf{Admins} -- granice administracyjne wszystkich krajów
+\end{itemize}
+
+Dane są dystrybuowane w~formacie GeoParquet i~dostępne przez dedykowane API.
+
+\subsubsection{OpenStreetMap i~Nominatim}
+
+OpenStreetMap (OSM) to crowdsourcingowy projekt mapowy dostarczający danych o~granicach administracyjnych. Nominatim to usługa geokodowania OSM umożliwiająca wyszukiwanie lokalizacji po nazwie. Overpass API pozwala na pobieranie szczegółowych geometrii granic.
+
+\subsection{Model oceny ryzyka powodziowego}
+
+Tradycyjny model oceny ryzyka katastroficznego~\cite{pregnolato2022bridge} definiuje ryzyko jako funkcję trzech komponentów: zagrożenia (hazard), ekspozycji (exposure) i~podatności (vulnerability). W~praktyce pełna implementacja takiego modelu wymaga szczegółowych danych o~podatności poszczególnych typów obiektów, które często nie są dostępne.
+
+RiskScoop AI stosuje uproszczone podejście oparte na danych Copernicus GloFAS: klasy głębokości zalania (1--5) z~map zagrożenia powodziowego są mapowane na trójstopniową skalę ryzyka (niskie, średnie, wysokie), a~ekspozycja jest wyznaczana poprzez analizę przecięć przestrzennych obiektów infrastruktury ze strefami zagrożenia. Podejście to pomija komponent podatności, lecz pozwala na szybką identyfikację zagrożonych obiektów w~kontekście Rapid Mapping.
+
+W~kontekście infrastruktury krytycznej~\cite{chukwuma2021flood} szczególnie istotne są: służba zdrowia (szpitale, kliniki), transport (drogi, mosty), edukacja (szkoły) oraz usługi publiczne (straż pożarna, policja).
+
+\subsection{Podsumowanie przeglądu literatury}
+
+Z~przeglądu literatury wynika, że nie istnieje system łączący interfejs języka naturalnego z~analizą ryzyka powodziowego dla infrastruktury krytycznej. Istniejące frameworki agentów AI są generalistyczne, a~platformy flood risk nie oferują interfejsu NL. RiskScoop AI wypełnia tę lukę, specjalizując się w~Rapid Mapping z~wykorzystaniem otwartych europejskich źródeł danych.
+

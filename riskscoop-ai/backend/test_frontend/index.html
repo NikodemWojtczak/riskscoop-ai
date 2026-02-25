@@ -1,0 +1,3004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RiskScoop AI - Agent Test</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Chat Sidebar (always visible on left) */
+        .chat-sidebar {
+            width: 380px;
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #334155;
+        }
+
+        .chat-sidebar .chat-header {
+            padding: 12px 16px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-sidebar .chat-header h1 {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #38bdf8;
+            margin: 0;
+        }
+
+        .hamburger-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .hamburger-btn:hover {
+            background: #334155;
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 16px;
+            height: 2px;
+            background: #94a3b8;
+            border-radius: 1px;
+        }
+
+        .new-chat-btn {
+            width: 36px;
+            height: 36px;
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: #3b82f6;
+        }
+
+        .new-chat-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-input-wrapper {
+            background: #0f172a;
+            border-top: 1px solid #334155;
+        }
+
+        .chat-input {
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #e2e8f0;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input input:focus {
+            border-color: #3b82f6;
+        }
+
+        .chat-input input::placeholder {
+            color: #64748b;
+        }
+
+        .chat-input button {
+            width: 44px;
+            height: 44px;
+            background: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chat-input button:hover {
+            background: #2563eb;
+        }
+
+        .chat-input button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* History Panel (slides over chat sidebar) */
+        .history-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 320px;
+            background: #1e293b;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .history-panel.open {
+            transform: translateX(0);
+        }
+
+        .history-header {
+            padding: 16px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .history-close {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .history-close:hover {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .history-close svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        /* Right Sidebar - Layers (always visible) */
+        .sidebar-right {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 280px;
+            background: #1e293b;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #334155;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        /* Messages */
+        .message {
+            max-width: 90%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .message.user {
+            background: #3b82f6;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            background: #334155;
+            color: #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.system {
+            background: #065f46;
+            color: #a7f3d0;
+            align-self: center;
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+
+        .message.error {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        /* Tool call / intermediate step message - minimalistic */
+        .message.tool-call {
+            background: transparent;
+            color: #64748b;
+            font-size: 11px;
+            padding: 2px 0;
+            align-self: flex-start;
+            max-width: 100%;
+            border-radius: 0;
+            cursor: default;
+        }
+
+        .message.tool-call .tool-indicator {
+            color: #8b5cf6;
+            margin-right: 4px;
+        }
+
+        .message.tool-call:hover {
+            color: #94a3b8;
+        }
+
+        /* Markdown styling inside messages */
+        .message.assistant {
+            line-height: 1.6;
+        }
+
+        .message.assistant h1,
+        .message.assistant h2,
+        .message.assistant h3 {
+            margin: 12px 0 8px 0;
+            color: #f1f5f9;
+        }
+
+        .message.assistant h1 { font-size: 18px; }
+        .message.assistant h2 { font-size: 16px; }
+        .message.assistant h3 { font-size: 14px; }
+
+        .message.assistant p {
+            margin: 8px 0;
+        }
+
+        .message.assistant ul,
+        .message.assistant ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .message.assistant li {
+            margin: 4px 0;
+        }
+
+        .message.assistant code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .message.assistant pre {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message.assistant pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message.assistant table {
+            border-collapse: collapse;
+            margin: 8px 0;
+            width: 100%;
+        }
+
+        .message.assistant th,
+        .message.assistant td {
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        .message.assistant th {
+            background: rgba(0,0,0,0.2);
+            color: #e2e8f0;
+        }
+
+        .message.assistant strong {
+            color: #f1f5f9;
+        }
+
+        .message.assistant blockquote {
+            border-left: 3px solid #475569;
+            margin: 8px 0;
+            padding-left: 12px;
+            color: #94a3b8;
+        }
+
+        .message.assistant a {
+            color: #38bdf8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .message.assistant a:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
+        /* Chart link special styling */
+        .message.assistant a[href*="flood_stats"] {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-weight: 500;
+            margin: 8px 0;
+        }
+
+        .message.assistant a[href*="flood_stats"]:hover {
+            background: rgba(56, 189, 248, 0.25);
+            border-color: rgba(56, 189, 248, 0.5);
+            text-decoration: none;
+        }
+
+        /* Streaming indicator */
+        .streaming-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #38bdf8;
+            border-radius: 50%;
+            margin-left: 6px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .typing {
+            display: flex;
+            gap: 3px;
+            padding: 4px 0;
+            align-self: flex-start;
+        }
+
+        .typing span {
+            width: 4px;
+            height: 4px;
+            background: #64748b;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing span:nth-child(1) { animation-delay: -0.32s; }
+        .typing span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Layers Panel Content */
+        .layers-list-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .layer-item:hover {
+            background: #1e3a5f;
+            border-color: #334155;
+        }
+
+        .layer-item.active {
+            background: #1e3a5f;
+            border-color: #3b82f6;
+        }
+
+        .layer-item.hidden {
+            opacity: 0.5;
+        }
+
+        .layer-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .layer-count {
+            font-size: 10px;
+            color: #94a3b8;
+            background: #334155;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .layers-empty {
+            text-align: center;
+            padding: 30px 20px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .layers-empty svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .layer-visibility {
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .layer-visibility:hover {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .layer-visibility.hidden {
+            color: #475569;
+        }
+
+        .layer-visibility svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .layer-chart {
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            color: #8b5cf6;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .layer-chart:hover {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .layer-chart svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .layer-delete {
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0;
+        }
+
+        .layer-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .layer-delete svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Conversation Items (in left sidebar) */
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #1e293b;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+        }
+
+        .conversation-item:hover {
+            background: #334155;
+        }
+
+        .conversation-item.active {
+            background: #1e3a5f;
+            border: 1px solid #3b82f6;
+        }
+
+        .conversation-item .conv-icon {
+            color: #64748b;
+        }
+
+        .conversation-item .conv-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .conversation-item .conv-delete {
+            width: 18px;
+            height: 18px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .conversation-item:hover .conv-delete {
+            opacity: 1;
+        }
+
+        .conversation-item .conv-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .conversations-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .conversations-empty svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Basemap Selector */
+        .basemap-selector {
+            position: absolute;
+            bottom: 40px;
+            left: 16px;
+            z-index: 10;
+        }
+
+        .basemap-btn {
+            padding: 8px 12px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .basemap-btn:hover {
+            background: #334155;
+        }
+
+        .basemap-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .basemap-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 8px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+            min-width: 160px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .basemap-menu.open {
+            display: block;
+        }
+
+        .basemap-option {
+            padding: 10px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+            border-bottom: 1px solid #334155;
+        }
+
+        .basemap-option:last-child {
+            border-bottom: none;
+        }
+
+        .basemap-option:hover {
+            background: #334155;
+        }
+
+        .basemap-option.active {
+            background: #1e3a5f;
+            color: #38bdf8;
+        }
+
+        .basemap-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #475569;
+        }
+
+        /* Feature Popup */
+        .mapboxgl-popup-content {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 0;
+            border-radius: 8px;
+            max-width: 300px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .mapboxgl-popup-close-button {
+            color: #94a3b8;
+            font-size: 18px;
+            padding: 8px;
+        }
+
+        .popup-header {
+            padding: 12px;
+            background: #334155;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+        }
+
+        .popup-body {
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        .popup-body p {
+            margin-bottom: 6px;
+            color: #94a3b8;
+        }
+
+        .popup-body strong {
+            color: #e2e8f0;
+        }
+
+        /* Flood tooltip */
+        .flood-tooltip {
+            position: absolute;
+            background: rgba(30, 41, 59, 0.95);
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 1px solid #475569;
+            max-width: 200px;
+        }
+
+        .flood-tooltip .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #38bdf8;
+        }
+
+        .flood-tooltip .tooltip-depth {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .flood-tooltip .depth-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .flood-tooltip .risk-high { color: #ef4444; }
+        .flood-tooltip .risk-medium { color: #f59e0b; }
+        .flood-tooltip .risk-low { color: #fcd34d; }
+
+        /* Vector layer tooltip */
+        .vector-tooltip {
+            position: absolute;
+            background: rgba(30, 41, 59, 0.95);
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 1px solid #475569;
+            max-width: 280px;
+        }
+
+        .vector-tooltip .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #38bdf8;
+            border-bottom: 1px solid #475569;
+            padding-bottom: 4px;
+        }
+
+        .vector-tooltip .tooltip-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .vector-tooltip .tooltip-key {
+            color: #94a3b8;
+            min-width: 60px;
+        }
+
+        .vector-tooltip .tooltip-value {
+            color: #e2e8f0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 180px;
+        }
+
+        /* Chart Modal */
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chart-modal.open {
+            display: flex;
+        }
+
+        .chart-modal-content {
+            background: #1e293b;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+        }
+
+        .chart-modal-header {
+            padding: 20px 24px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .chart-modal-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-modal-header h2 svg {
+            width: 24px;
+            height: 24px;
+            color: #38bdf8;
+        }
+
+        .chart-modal-close {
+            width: 36px;
+            height: 36px;
+            background: #334155;
+            border: none;
+            color: #94a3b8;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .chart-modal-close:hover {
+            background: #475569;
+            color: #f1f5f9;
+        }
+
+        .chart-modal-body {
+            padding: 24px;
+        }
+
+        /* Summary Cards */
+        .chart-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .summary-card .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .summary-card .card-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card.total .card-value { color: #38bdf8; }
+        .summary-card.at-risk .card-value { color: #ef4444; }
+        .summary-card.safe .card-value { color: #10b981; }
+        .summary-card.percentage .card-value { color: #f59e0b; }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .chart-container {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #334155;
+        }
+
+        .chart-container h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-container h3 svg {
+            width: 18px;
+            height: 18px;
+            color: #64748b;
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 220px;
+        }
+
+        /* Feature Types List */
+        .feature-types-container {
+            grid-column: span 2;
+        }
+
+        .feature-types-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .feature-type-badge {
+            background: #334155;
+            color: #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feature-type-badge .count {
+            background: #475569;
+            color: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chart-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .feature-types-container {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- History Panel (slides over from left) -->
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <h2>History</h2>
+            <button class="history-close" id="historyClose">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="conversations-list" id="conversationsList"></div>
+    </div>
+
+    <!-- Left Sidebar - Chat (always visible) -->
+    <div class="chat-sidebar">
+        <div class="chat-header">
+            <button class="hamburger-btn" id="hamburgerBtn" title="View history">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1>RiskScoop AI</h1>
+            <button class="new-chat-btn" id="newChatBtn" title="New conversation">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+        </div>
+        <div class="chat-messages" id="chatArea"></div>
+        <div class="chat-input-wrapper">
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Ask about geographic data..." />
+                <button id="sendBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center - Map -->
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="basemap-selector" id="basemapSelector">
+            <div class="basemap-menu" id="basemapMenu">
+                <div class="basemap-option active" data-style="dark-v11">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"></div>
+                    <span>Dark</span>
+                </div>
+                <div class="basemap-option" data-style="light-v11">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);"></div>
+                    <span>Light</span>
+                </div>
+                <div class="basemap-option" data-style="streets-v12">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #e8e4d8 0%, #d4cfc4 100%);"></div>
+                    <span>Streets</span>
+                </div>
+                <div class="basemap-option" data-style="outdoors-v12">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #d4e6c3 0%, #a8d08d 100%);"></div>
+                    <span>Outdoors</span>
+                </div>
+                <div class="basemap-option" data-style="satellite-v9">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #1a3a1a 0%, #0d1f0d 100%);"></div>
+                    <span>Satellite</span>
+                </div>
+                <div class="basemap-option" data-style="satellite-streets-v12">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #2d4a2d 0%, #1a3a1a 100%);"></div>
+                    <span>Satellite Streets</span>
+                </div>
+                <div class="basemap-option" data-style="navigation-night-v1">
+                    <div class="basemap-preview" style="background: linear-gradient(135deg, #0a1628 0%, #1a2744 100%);"></div>
+                    <span>Navigation Night</span>
+                </div>
+            </div>
+            <button class="basemap-btn" id="basemapBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                Basemap
+            </button>
+        </div>
+        <div class="flood-tooltip" id="floodTooltip" style="display: none;"></div>
+        <div class="vector-tooltip" id="vectorTooltip" style="display: none;"></div>
+    </div>
+
+    <!-- Right Sidebar - Layers -->
+    <div class="sidebar sidebar-right" id="sidebarRight">
+        <div class="sidebar-header">
+            <h2>Layers</h2>
+        </div>
+        <div class="layers-list-wrapper">
+            <div id="layersList"></div>
+        </div>
+    </div>
+
+    <!-- Chart Modal -->
+    <div class="chart-modal" id="chartModal">
+        <div class="chart-modal-content">
+            <div class="chart-modal-header">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span id="chartModalTitle">Flood Risk Analysis</span>
+                </h2>
+                <button class="chart-modal-close" id="chartModalClose">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="chart-modal-body">
+                <!-- Summary Cards -->
+                <div class="chart-summary" id="chartSummary"></div>
+
+                <!-- Charts -->
+                <div class="charts-grid" id="chartsGrid">
+                    <div class="chart-container">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                            </svg>
+                            Exposure Overview
+                        </h3>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="exposureChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Risk Level Distribution
+                        </h3>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="riskChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                            Flood Depth Distribution
+                        </h3>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="depthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container feature-types-container" id="featureTypesContainer">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Features at Risk by Type
+                        </h3>
+                        <div class="feature-types-list" id="featureTypesList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.0/dist-browser/geotiff.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // Configuration - token will be loaded from backend
+        const API_BASE = 'http://localhost:7777';
+        let MAPBOX_TOKEN = null;
+
+        // Layer colors
+        const LAYER_COLORS = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+            '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
+        ];
+
+        // State
+        let sessionId = null;
+        let layers = {};
+        let rasterLayers = {};
+        let colorIndex = 0;
+        let map = null;
+        let conversations = [];  // List of saved conversations
+        let currentConversationIndex = -1;  // Index of current conversation
+
+        // Flood tooltip state - store raster data for hover queries
+        let floodRasterData = {};  // { layerName: { data, width, height, bounds } }
+
+        // Track hidden layers for tooltip visibility
+        let hiddenLayers = new Set();
+        let hiddenRasterLayers = new Set();
+
+        // DOM Elements
+        const chatArea = document.getElementById('chatArea');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const layersList = document.getElementById('layersList');
+        const chartModal = document.getElementById('chartModal');
+        const chartModalClose = document.getElementById('chartModalClose');
+        const chartModalTitle = document.getElementById('chartModalTitle');
+        const chartSummary = document.getElementById('chartSummary');
+        const featureTypesList = document.getElementById('featureTypesList');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const historyPanel = document.getElementById('historyPanel');
+        const historyClose = document.getElementById('historyClose');
+
+        // Chart instances
+        let exposureChart = null;
+        let riskChart = null;
+        let depthChart = null;
+        const newChatBtn = document.getElementById('newChatBtn');
+        const conversationsList = document.getElementById('conversationsList');
+        const floodTooltip = document.getElementById('floodTooltip');
+        const vectorTooltip = document.getElementById('vectorTooltip');
+        const basemapBtn = document.getElementById('basemapBtn');
+        const basemapMenu = document.getElementById('basemapMenu');
+
+        // History panel functions
+        function openHistoryPanel() {
+            historyPanel.classList.add('open');
+        }
+
+        function closeHistoryPanel() {
+            historyPanel.classList.remove('open');
+        }
+
+        // Current basemap style - load from localStorage or default
+        let currentBasemap = localStorage.getItem('riskscoop_basemap') || 'dark-v11';
+
+        // Store GeoJSON data for persistence
+        let layerGeoJsonData = {};  // { layerName: geojson }
+
+        // Add message to chat
+        function addMessage(text, type = 'assistant', options = {}) {
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+
+            if (type === 'assistant') {
+                // Parse markdown for assistant messages
+                msg.innerHTML = marked.parse(text);
+            } else if (type === 'tool-call') {
+                // Tool call - minimalistic single line
+                msg.innerHTML = `<span class="tool-indicator">&#8226;</span> ${options.toolName || 'Processing'}`;
+                msg.title = options.args ? formatToolArgs(options.args) : '';
+            } else if (type === 'tool-result') {
+                msg.innerHTML = `
+                    <div><strong>Result:</strong> ${text}</div>
+                    ${options.preview ? `<div class="result-preview">${options.preview}</div>` : ''}
+                `;
+            } else {
+                msg.textContent = text;
+            }
+
+            chatArea.appendChild(msg);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            return msg;
+        }
+
+        // Format tool arguments for display
+        function formatToolArgs(args) {
+            if (typeof args === 'string') {
+                try {
+                    args = JSON.parse(args);
+                } catch (e) {
+                    return args;
+                }
+            }
+            // Format nicely, excluding session_state
+            const filtered = {};
+            for (const [key, value] of Object.entries(args)) {
+                if (key !== 'session_state') {
+                    filtered[key] = value;
+                }
+            }
+            return JSON.stringify(filtered, null, 2);
+        }
+
+        // Add streaming message that can be updated
+        function addStreamingMessage() {
+            const msg = document.createElement('div');
+            msg.className = 'message assistant';
+            msg.id = 'streamingMessage';
+            msg.innerHTML = '<span class="streaming-indicator"></span>';
+            chatArea.appendChild(msg);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            return msg;
+        }
+
+        // Update streaming message content
+        function updateStreamingMessage(content) {
+            const msg = document.getElementById('streamingMessage');
+            if (msg) {
+                msg.innerHTML = marked.parse(content) + '<span class="streaming-indicator"></span>';
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+        }
+
+        // Finalize streaming message
+        function finalizeStreamingMessage(content) {
+            const msg = document.getElementById('streamingMessage');
+            if (msg) {
+                msg.innerHTML = marked.parse(content);
+                msg.removeAttribute('id');
+            }
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'typing';
+            typing.id = 'typingIndicator';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            chatArea.appendChild(typing);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        // Get next color for layer
+        function getNextColor() {
+            const color = LAYER_COLORS[colorIndex % LAYER_COLORS.length];
+            colorIndex++;
+            return color;
+        }
+
+        // Add GeoJSON layer to map
+        function addLayerToMap(name, geojson, color) {
+            const sourceId = `source-${name}`;
+            const layerId = `layer-${name}`;
+            const pointLayerId = `layer-${name}-points`;
+
+            // Store GeoJSON data for persistence
+            layerGeoJsonData[name] = geojson;
+
+            // Remove existing if present
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
+            if (map.getLayer(pointLayerId)) map.removeLayer(pointLayerId);
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+
+            // Add source
+            map.addSource(sourceId, {
+                type: 'geojson',
+                data: geojson
+            });
+
+            // Add polygon/line layer
+            map.addLayer({
+                id: layerId,
+                type: 'fill',
+                source: sourceId,
+                paint: {
+                    'fill-color': color,
+                    'fill-opacity': 0.3,
+                    'fill-outline-color': color
+                },
+                filter: ['==', '$type', 'Polygon']
+            });
+
+            // Add line layer for LineStrings
+            map.addLayer({
+                id: `${layerId}-lines`,
+                type: 'line',
+                source: sourceId,
+                paint: {
+                    'line-color': color,
+                    'line-width': 2
+                },
+                filter: ['==', '$type', 'LineString']
+            });
+
+            // Add point layer
+            map.addLayer({
+                id: pointLayerId,
+                type: 'circle',
+                source: sourceId,
+                paint: {
+                    'circle-color': color,
+                    'circle-radius': 6,
+                    'circle-stroke-color': '#fff',
+                    'circle-stroke-width': 1
+                },
+                filter: ['==', '$type', 'Point']
+            });
+
+            // Add hover tooltip for points
+            map.on('mouseenter', pointLayerId, (e) => {
+                if (hiddenLayers.has(name)) return;
+                map.getCanvas().style.cursor = 'pointer';
+                const props = e.features[0].properties;
+                showVectorTooltip(e, name, props);
+            });
+
+            map.on('mouseleave', pointLayerId, () => {
+                map.getCanvas().style.cursor = '';
+                hideVectorTooltip();
+            });
+
+            // Add hover tooltip for polygons
+            map.on('mouseenter', layerId, (e) => {
+                if (hiddenLayers.has(name)) return;
+                map.getCanvas().style.cursor = 'pointer';
+                const props = e.features[0].properties;
+                showVectorTooltip(e, name, props);
+            });
+
+            map.on('mouseleave', layerId, () => {
+                map.getCanvas().style.cursor = '';
+                hideVectorTooltip();
+            });
+
+            // Add hover tooltip for lines
+            map.on('mouseenter', `${layerId}-lines`, (e) => {
+                if (hiddenLayers.has(name)) return;
+                map.getCanvas().style.cursor = 'pointer';
+                const props = e.features[0].properties;
+                showVectorTooltip(e, name, props);
+            });
+
+            map.on('mouseleave', `${layerId}-lines`, () => {
+                map.getCanvas().style.cursor = '';
+                hideVectorTooltip();
+            });
+
+            // Add click handler for popups (more detailed info)
+            map.on('click', pointLayerId, (e) => {
+                if (hiddenLayers.has(name)) return;
+                const props = e.features[0].properties;
+                const html = Object.entries(props)
+                    .filter(([k, v]) => v && k !== 'geometry')
+                    .slice(0, 8)
+                    .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+                    .join('');
+
+                new mapboxgl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`<div class="popup-header">${name}</div><div class="popup-body">${html}</div>`)
+                    .addTo(map);
+            });
+
+            map.on('click', layerId, (e) => {
+                if (hiddenLayers.has(name)) return;
+                const props = e.features[0].properties;
+                const html = Object.entries(props)
+                    .filter(([k, v]) => v && k !== 'geometry')
+                    .slice(0, 8)
+                    .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+                    .join('');
+
+                new mapboxgl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`<div class="popup-header">${name}</div><div class="popup-body">${html}</div>`)
+                    .addTo(map);
+            });
+
+            // Fit bounds
+            const bounds = new mapboxgl.LngLatBounds();
+            geojson.features.forEach(f => {
+                if (f.geometry.type === 'Point') {
+                    bounds.extend(f.geometry.coordinates);
+                } else if (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon') {
+                    const coords = f.geometry.type === 'Polygon'
+                        ? f.geometry.coordinates[0]
+                        : f.geometry.coordinates[0][0];
+                    coords.forEach(c => bounds.extend(c));
+                } else if (f.geometry.type === 'LineString') {
+                    f.geometry.coordinates.forEach(c => bounds.extend(c));
+                }
+            });
+
+            if (!bounds.isEmpty()) {
+                map.fitBounds(bounds, { padding: 50 });
+            }
+
+            return geojson.features.length;
+        }
+
+        // Update layers panel
+        function updateLayersPanel() {
+            layersList.innerHTML = '';
+
+            const deleteIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>`;
+
+            const eyeOpenIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>`;
+
+            const eyeClosedIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+            </svg>`;
+
+            // Check if there are any layers
+            const hasLayers = Object.keys(layers).length > 0 || Object.keys(rasterLayers).length > 0;
+
+            if (!hasLayers) {
+                layersList.innerHTML = `
+                    <div class="layers-empty">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        <p>No layers yet</p>
+                        <p style="font-size: 11px; margin-top: 4px;">Ask the agent to find data</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Chart icon for flood risk layers
+            const chartIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>`;
+
+            // Vector layers
+            Object.entries(layers).forEach(([name, data]) => {
+                const isHidden = hiddenLayers.has(name);
+                const isFloodRiskLayer = name.includes('_at_risk') || name.includes('_risk') || name.includes('flood');
+                const item = document.createElement('div');
+                item.className = `layer-item ${isHidden ? 'hidden' : 'active'}`;
+                item.innerHTML = `
+                    <button class="layer-visibility ${isHidden ? 'hidden' : ''}" title="${isHidden ? 'Show layer' : 'Hide layer'}">${isHidden ? eyeClosedIcon : eyeOpenIcon}</button>
+                    <div class="layer-color" style="background: ${data.color}"></div>
+                    <span class="layer-name">${name}</span>
+                    <span class="layer-count">${data.count}</span>
+                    ${isFloodRiskLayer ? `<button class="layer-chart" title="View flood statistics">${chartIcon}</button>` : ''}
+                    <button class="layer-delete" title="Delete layer">${deleteIcon}</button>
+                `;
+                item.querySelector('.layer-visibility').onclick = (e) => {
+                    e.stopPropagation();
+                    toggleLayer(name);
+                };
+                if (isFloodRiskLayer) {
+                    item.querySelector('.layer-chart').onclick = (e) => {
+                        e.stopPropagation();
+                        openChartModal(name);
+                    };
+                }
+                item.querySelector('.layer-delete').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteLayer(name);
+                };
+                layersList.appendChild(item);
+            });
+
+            // Raster layers (flood data)
+            Object.entries(rasterLayers).forEach(([name, data]) => {
+                const isHidden = hiddenRasterLayers.has(name);
+                const item = document.createElement('div');
+                item.className = `layer-item ${isHidden ? 'hidden' : 'active'}`;
+                item.innerHTML = `
+                    <button class="layer-visibility ${isHidden ? 'hidden' : ''}" title="${isHidden ? 'Show layer' : 'Hide layer'}">${isHidden ? eyeClosedIcon : eyeOpenIcon}</button>
+                    <div class="layer-color" style="background: linear-gradient(135deg, #fcd34d 0%, #dc2626 100%)"></div>
+                    <span class="layer-name">${name}</span>
+                    <span class="layer-count">Flood</span>
+                    <button class="layer-delete" title="Delete layer">${deleteIcon}</button>
+                `;
+                item.querySelector('.layer-visibility').onclick = (e) => {
+                    e.stopPropagation();
+                    toggleRasterLayer(name);
+                };
+                item.querySelector('.layer-delete').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteRasterLayer(name);
+                };
+                layersList.appendChild(item);
+            });
+        }
+
+        // Delete a vector layer
+        function deleteLayer(name) {
+            const layerId = `layer-${name}`;
+            const pointLayerId = `layer-${name}-points`;
+            const lineLayerId = `layer-${name}-lines`;
+            const sourceId = `source-${name}`;
+
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
+            if (map.getLayer(pointLayerId)) map.removeLayer(pointLayerId);
+            if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+
+            delete layers[name];
+            delete layerGeoJsonData[name];  // Clean up stored GeoJSON
+            hiddenLayers.delete(name);  // Clean up hidden layer tracking
+            updateLayersPanel();
+            saveCurrentConversation();  // Persist changes
+            addMessage(`Layer "${name}" removed`, 'system');
+        }
+
+        // Delete a raster layer
+        function deleteRasterLayer(name) {
+            const layerId = `raster-layer-${name}`;
+            const sourceId = `raster-source-${name}`;
+
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+
+            delete rasterLayers[name];
+            delete floodRasterData[name];  // Clean up tooltip data
+            hiddenRasterLayers.delete(name);  // Clean up hidden layer tracking
+            updateLayersPanel();
+            saveCurrentConversation();  // Persist changes
+            addMessage(`Flood layer "${name}" removed`, 'system');
+        }
+
+        // Toggle raster layer visibility
+        function toggleRasterLayer(name) {
+            const layerId = `raster-layer-${name}`;
+
+            const visibility = map.getLayoutProperty(layerId, 'visibility');
+            const newVisibility = visibility === 'none' ? 'visible' : 'none';
+
+            if (map.getLayer(layerId)) {
+                map.setLayoutProperty(layerId, 'visibility', newVisibility);
+            }
+
+            // Track hidden raster layers for tooltip visibility
+            if (newVisibility === 'none') {
+                hiddenRasterLayers.add(name);
+            } else {
+                hiddenRasterLayers.delete(name);
+            }
+
+            // Update layers panel to reflect visibility state
+            updateLayersPanel();
+        }
+
+        // Toggle layer visibility
+        function toggleLayer(name) {
+            const layerId = `layer-${name}`;
+            const pointLayerId = `layer-${name}-points`;
+            const lineLayerId = `layer-${name}-lines`;
+
+            const visibility = map.getLayoutProperty(layerId, 'visibility');
+            const newVisibility = visibility === 'none' ? 'visible' : 'none';
+
+            if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', newVisibility);
+            if (map.getLayer(pointLayerId)) map.setLayoutProperty(pointLayerId, 'visibility', newVisibility);
+            if (map.getLayer(lineLayerId)) map.setLayoutProperty(lineLayerId, 'visibility', newVisibility);
+
+            // Track hidden layers for tooltip visibility
+            if (newVisibility === 'none') {
+                hiddenLayers.add(name);
+            } else {
+                hiddenLayers.delete(name);
+            }
+
+            // Update layers panel to reflect visibility state
+            updateLayersPanel();
+        }
+
+        // Clear all layers
+        function clearLayers() {
+            // Clear vector layers
+            Object.keys(layers).forEach(name => {
+                const layerId = `layer-${name}`;
+                const pointLayerId = `layer-${name}-points`;
+                const lineLayerId = `layer-${name}-lines`;
+                const sourceId = `source-${name}`;
+
+                if (map.getLayer(layerId)) map.removeLayer(layerId);
+                if (map.getLayer(pointLayerId)) map.removeLayer(pointLayerId);
+                if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
+                if (map.getSource(sourceId)) map.removeSource(sourceId);
+            });
+
+            // Clear raster layers
+            Object.keys(rasterLayers).forEach(name => {
+                const layerId = `raster-layer-${name}`;
+                const sourceId = `raster-source-${name}`;
+
+                if (map.getLayer(layerId)) map.removeLayer(layerId);
+                if (map.getSource(sourceId)) map.removeSource(sourceId);
+            });
+
+            layers = {};
+            rasterLayers = {};
+            layerGeoJsonData = {};  // Clean up stored GeoJSON
+            floodRasterData = {};  // Clean up tooltip data
+            hiddenLayers.clear();  // Clear hidden layer tracking
+            hiddenRasterLayers.clear();
+            colorIndex = 0;
+            updateLayersPanel();
+        }
+
+        // Save current conversation state
+        function saveCurrentConversation() {
+            if (currentConversationIndex >= 0 && conversations[currentConversationIndex]) {
+                conversations[currentConversationIndex].messages = chatArea.innerHTML;
+                conversations[currentConversationIndex].sessionId = sessionId;
+                conversations[currentConversationIndex].layers = JSON.parse(JSON.stringify(layers));
+                conversations[currentConversationIndex].rasterLayers = JSON.parse(JSON.stringify(rasterLayers));
+                // Don't store GeoJSON data - it's too large for localStorage
+                // Layers will be re-fetched from backend using UUID
+                try {
+                    saveConversationsToStorage();
+                } catch (e) {
+                    console.warn('Failed to save to localStorage:', e.message);
+                    // Try to clear old data and save again
+                    if (e.name === 'QuotaExceededError') {
+                        clearOldConversations();
+                        try {
+                            saveConversationsToStorage();
+                        } catch (e2) {
+                            console.error('Still cannot save after cleanup:', e2);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Clear old conversations to free up space
+        function clearOldConversations() {
+            // Keep only the 5 most recent conversations
+            if (conversations.length > 5) {
+                conversations = conversations.slice(0, 5);
+            }
+            // Also clear any stored GeoJSON data from old format
+            conversations.forEach(conv => {
+                delete conv.layerGeoJsonData;
+            });
+        }
+
+        // Load conversations from local storage
+        async function loadConversationsFromStorage() {
+            const stored = localStorage.getItem('riskscoop_conversations');
+            if (stored) {
+                try {
+                    conversations = JSON.parse(stored);
+                } catch (e) {
+                    conversations = [];
+                }
+            }
+            updateConversationsPanel();
+
+            // Auto-load the most recent conversation if exists
+            if (conversations.length > 0) {
+                // Wait for map to be ready before restoring layers
+                if (map.loaded()) {
+                    await restoreConversation(0);
+                } else {
+                    map.once('load', async () => {
+                        await restoreConversation(0);
+                    });
+                }
+            }
+        }
+
+        // Restore a conversation (used on page load)
+        async function restoreConversation(index) {
+            const conv = conversations[index];
+            if (!conv) return;
+
+            currentConversationIndex = index;
+            sessionId = conv.sessionId;
+            chatArea.innerHTML = conv.messages || '';
+
+            // Restore layer metadata
+            const savedLayers = conv.layers || {};
+            const savedRasterLayers = conv.rasterLayers || {};
+
+            // Restore vector layers by fetching from backend
+            for (const [name, data] of Object.entries(savedLayers)) {
+                if (data.uuid) {
+                    try {
+                        const geojson = await fetchLayer(data.uuid);
+                        if (geojson) {
+                            const count = addLayerToMap(name, geojson, data.color);
+                            layers[name] = { ...data, count };
+                        }
+                    } catch (e) {
+                        console.error(`Failed to restore layer ${name}:`, e);
+                    }
+                }
+            }
+
+            // Restore raster layers (flood data)
+            for (const [name, rasterInfo] of Object.entries(savedRasterLayers)) {
+                if (rasterInfo && rasterInfo.tiff_path) {
+                    try {
+                        await addRasterLayerToMap(name, rasterInfo);
+                        rasterLayers[name] = rasterInfo;
+                    } catch (e) {
+                        console.error(`Failed to restore raster layer ${name}:`, e);
+                    }
+                }
+            }
+
+            updateLayersPanel();
+            updateConversationsPanel();
+
+            // Fit map to all layers if any exist
+            if (Object.keys(layers).length > 0 || Object.keys(rasterLayers).length > 0) {
+                setTimeout(() => fitAllLayers(), 500);
+            }
+        }
+
+        // Save conversations to local storage
+        function saveConversationsToStorage() {
+            localStorage.setItem('riskscoop_conversations', JSON.stringify(conversations));
+        }
+
+        // Update conversations panel
+        function updateConversationsPanel() {
+            conversationsList.innerHTML = '';
+
+            if (conversations.length === 0) {
+                conversationsList.innerHTML = `
+                    <div class="conversations-empty">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p>No conversations yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const deleteIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="12" height="12">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>`;
+
+            const chatIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>`;
+
+            conversations.forEach((conv, index) => {
+                const item = document.createElement('div');
+                item.className = `conversation-item ${index === currentConversationIndex ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span class="conv-icon">${chatIcon}</span>
+                    <span class="conv-title">${conv.title || 'Untitled'}</span>
+                    <button class="conv-delete" title="Delete conversation">${deleteIcon}</button>
+                `;
+                item.querySelector('.conv-title').onclick = () => switchConversation(index);
+                item.querySelector('.conv-icon').onclick = () => switchConversation(index);
+                item.querySelector('.conv-delete').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteConversation(index);
+                };
+                conversationsList.appendChild(item);
+            });
+        }
+
+        // Switch to a different conversation
+        async function switchConversation(index) {
+            if (index === currentConversationIndex) return;
+
+            // Save current conversation
+            saveCurrentConversation();
+
+            // Clear current map layers
+            clearLayers();
+
+            // Load selected conversation
+            const conv = conversations[index];
+            currentConversationIndex = index;
+            sessionId = conv.sessionId;
+            chatArea.innerHTML = conv.messages || '';
+
+            // Restore layer metadata
+            const savedLayers = conv.layers || {};
+            const savedRasterLayers = conv.rasterLayers || {};
+
+            // Restore vector layers by fetching from backend
+            for (const [name, data] of Object.entries(savedLayers)) {
+                if (data.uuid) {
+                    try {
+                        const geojson = await fetchLayer(data.uuid);
+                        if (geojson) {
+                            const count = addLayerToMap(name, geojson, data.color);
+                            layers[name] = { ...data, count };
+                        }
+                    } catch (e) {
+                        console.error(`Failed to restore layer ${name}:`, e);
+                    }
+                }
+            }
+
+            // Restore raster layers (flood data)
+            for (const [name, rasterInfo] of Object.entries(savedRasterLayers)) {
+                if (rasterInfo && rasterInfo.tiff_path) {
+                    try {
+                        await addRasterLayerToMap(name, rasterInfo);
+                        rasterLayers[name] = rasterInfo;
+                    } catch (e) {
+                        console.error(`Failed to restore raster layer ${name}:`, e);
+                    }
+                }
+            }
+
+            updateLayersPanel();
+            updateConversationsPanel();
+        }
+
+        // Delete a conversation
+        function deleteConversation(index) {
+            conversations.splice(index, 1);
+
+            if (currentConversationIndex === index) {
+                // Deleted current conversation, start fresh
+                currentConversationIndex = -1;
+                sessionId = null;
+                clearLayers();
+                chatArea.innerHTML = '';
+            } else if (currentConversationIndex > index) {
+                currentConversationIndex--;
+            }
+
+            saveConversationsToStorage();
+            updateConversationsPanel();
+        }
+
+        // Start a new conversation
+        function newConversation() {
+            // Save current conversation first
+            saveCurrentConversation();
+
+            // Create new conversation
+            const newConv = {
+                id: Date.now(),
+                title: 'New Chat',
+                createdAt: new Date().toISOString(),
+                messages: '',
+                sessionId: null,
+                layers: {},
+                rasterLayers: {}
+            };
+
+            conversations.unshift(newConv);
+            currentConversationIndex = 0;
+
+            // Clear chat messages
+            chatArea.innerHTML = '';
+
+            // Reset session
+            sessionId = null;
+
+            // Clear all map layers
+            clearLayers();
+
+            // Reset map view
+            map.flyTo({
+                center: [19.4560, 51.7592],
+                zoom: 11
+            });
+
+            saveConversationsToStorage();
+            updateConversationsPanel();
+
+            // Focus input
+            userInput.focus();
+        }
+
+        // Extract title from first user message
+        function extractConversationTitle(message) {
+            // Take first 30 chars of the message as title
+            const title = message.substring(0, 40);
+            return title.length < message.length ? title + '...' : title;
+        }
+
+        // Fit map to all layers
+        function fitAllLayers() {
+            const bounds = new mapboxgl.LngLatBounds();
+            let hasFeatures = false;
+
+            Object.keys(layers).forEach(name => {
+                const source = map.getSource(`source-${name}`);
+                if (source && source._data) {
+                    source._data.features.forEach(f => {
+                        hasFeatures = true;
+                        if (f.geometry.type === 'Point') {
+                            bounds.extend(f.geometry.coordinates);
+                        } else if (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon') {
+                            const coords = f.geometry.type === 'Polygon'
+                                ? f.geometry.coordinates[0]
+                                : f.geometry.coordinates[0][0];
+                            coords.forEach(c => bounds.extend(c));
+                        }
+                    });
+                }
+            });
+
+            // Include raster layer bounds
+            Object.values(rasterLayers).forEach(data => {
+                if (data.bounds) {
+                    hasFeatures = true;
+                    bounds.extend([data.bounds.west, data.bounds.south]);
+                    bounds.extend([data.bounds.east, data.bounds.north]);
+                }
+            });
+
+            if (hasFeatures && !bounds.isEmpty()) {
+                map.fitBounds(bounds, { padding: 50 });
+            }
+        }
+
+        // Flood depth colormap (matches backend)
+        const FLOOD_COLORMAP = {
+            0: [0, 0, 0, 0],           // No data - transparent
+            1: [255, 255, 178, 200],   // 0-0.5m - light yellow
+            2: [254, 204, 92, 200],    // 0.5-1m - yellow
+            3: [253, 141, 60, 200],    // 1-2m - orange
+            4: [240, 59, 32, 200],     // 2-5m - red
+            5: [189, 0, 38, 200]       // >5m - dark red
+        };
+
+        // Load GeoTIFF and render to canvas
+        async function loadGeoTiff(url) {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
+            const image = await tiff.getImage();
+
+            const width = image.getWidth();
+            const height = image.getHeight();
+            const rasters = await image.readRasters();
+            const data = rasters[0];  // First band
+
+            // Get bounds from GeoTIFF
+            const bbox = image.getBoundingBox();
+            const bounds = {
+                west: bbox[0],
+                south: bbox[1],
+                east: bbox[2],
+                north: bbox[3]
+            };
+
+            // Create canvas and render with colormap
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(width, height);
+
+            for (let i = 0; i < data.length; i++) {
+                const value = data[i];
+                // Get color for this value (0-5 for flood depth classes, 255 is nodata)
+                let color = [0, 0, 0, 0];  // Default transparent
+                if (value >= 1 && value <= 5) {
+                    color = FLOOD_COLORMAP[value] || [0, 0, 0, 0];
+                }
+
+                const pixelIndex = i * 4;
+                imageData.data[pixelIndex] = color[0];     // R
+                imageData.data[pixelIndex + 1] = color[1]; // G
+                imageData.data[pixelIndex + 2] = color[2]; // B
+                imageData.data[pixelIndex + 3] = color[3]; // A
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            return {
+                canvas: canvas,
+                bounds: bounds,
+                width: width,
+                height: height,
+                data: data  // Store raw data for tooltip queries
+            };
+        }
+
+        // Flood depth class info for tooltips
+        const FLOOD_DEPTH_INFO = {
+            1: { depth: '0-0.5m', risk: 'Low', color: '#fcd34d' },
+            2: { depth: '0.5-1m', risk: 'Medium', color: '#f59e0b' },
+            3: { depth: '1-2m', risk: 'High', color: '#f97316' },
+            4: { depth: '2-5m', risk: 'High', color: '#ef4444' },
+            5: { depth: '>5m', risk: 'High', color: '#b91c1c' }
+        };
+
+        // Get flood value at map coordinates
+        function getFloodValueAtPoint(lng, lat) {
+            for (const [name, data] of Object.entries(floodRasterData)) {
+                // Skip hidden raster layers
+                if (hiddenRasterLayers.has(name)) continue;
+
+                const bounds = data.bounds;
+
+                // Check if point is within raster bounds
+                if (lng >= bounds.west && lng <= bounds.east &&
+                    lat >= bounds.south && lat <= bounds.north) {
+
+                    // Convert lng/lat to pixel coordinates
+                    const xRatio = (lng - bounds.west) / (bounds.east - bounds.west);
+                    const yRatio = (bounds.north - lat) / (bounds.north - bounds.south);
+
+                    const col = Math.floor(xRatio * data.width);
+                    const row = Math.floor(yRatio * data.height);
+
+                    // Bounds check
+                    if (col >= 0 && col < data.width && row >= 0 && row < data.height) {
+                        const idx = row * data.width + col;
+                        const value = data.data[idx];
+
+                        if (value >= 1 && value <= 5) {
+                            return { layerName: name, value: value, info: FLOOD_DEPTH_INFO[value] };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Show flood tooltip
+        function showFloodTooltip(e, floodInfo) {
+            const info = floodInfo.info;
+            const riskClass = info.risk.toLowerCase() === 'high' ? 'risk-high' :
+                             (info.risk.toLowerCase() === 'medium' ? 'risk-medium' : 'risk-low');
+
+            floodTooltip.innerHTML = `
+                <div class="tooltip-title">Flood Hazard</div>
+                <div class="tooltip-depth">
+                    <div class="depth-indicator" style="background: ${info.color}"></div>
+                    <span>Depth: ${info.depth}</span>
+                </div>
+                <div class="tooltip-depth">
+                    <span class="${riskClass}">Risk: ${info.risk}</span>
+                </div>
+            `;
+
+            floodTooltip.style.display = 'block';
+            floodTooltip.style.left = (e.point.x + 15) + 'px';
+            floodTooltip.style.top = (e.point.y + 15) + 'px';
+        }
+
+        // Hide flood tooltip
+        function hideFloodTooltip() {
+            floodTooltip.style.display = 'none';
+        }
+
+        // Show vector layer tooltip
+        function showVectorTooltip(e, layerName, props) {
+            // Filter and format properties
+            const entries = Object.entries(props)
+                .filter(([k, v]) => v && k !== 'geometry' && v !== 'null' && v !== 'undefined')
+                .slice(0, 5);  // Limit to 5 properties for tooltip
+
+            if (entries.length === 0) {
+                vectorTooltip.innerHTML = `<div class="tooltip-title">${layerName}</div>`;
+            } else {
+                const rows = entries.map(([k, v]) => {
+                    // Truncate long values
+                    const displayValue = String(v).length > 30 ? String(v).substring(0, 30) + '...' : v;
+                    return `<div class="tooltip-row"><span class="tooltip-key">${k}:</span><span class="tooltip-value">${displayValue}</span></div>`;
+                }).join('');
+
+                vectorTooltip.innerHTML = `
+                    <div class="tooltip-title">${layerName}</div>
+                    ${rows}
+                `;
+            }
+
+            vectorTooltip.style.display = 'block';
+            vectorTooltip.style.left = (e.point.x + 15) + 'px';
+            vectorTooltip.style.top = (e.point.y + 15) + 'px';
+        }
+
+        // Hide vector tooltip
+        function hideVectorTooltip() {
+            vectorTooltip.style.display = 'none';
+        }
+
+        // ========== CHART MODAL FUNCTIONS ==========
+
+        // Open chart modal and fetch statistics
+        async function openChartModal(layerName) {
+            try {
+                chartModalTitle.textContent = `Flood Risk Analysis: ${layerName}`;
+                chartModal.classList.add('open');
+
+                // Fetch statistics from API
+                const response = await fetch(`${API_BASE}/flood-stats/${layerName}`);
+                if (!response.ok) {
+                    throw new Error('Statistics not found');
+                }
+                const data = await response.json();
+
+                // Render charts
+                renderCharts(data);
+            } catch (error) {
+                console.error('Failed to load chart data:', error);
+                chartSummary.innerHTML = `<div style="color: #ef4444; text-align: center; padding: 20px;">Failed to load statistics: ${error.message}</div>`;
+            }
+        }
+
+        // Close chart modal
+        function closeChartModal() {
+            chartModal.classList.remove('open');
+            // Destroy chart instances to prevent memory leaks
+            if (exposureChart) { exposureChart.destroy(); exposureChart = null; }
+            if (riskChart) { riskChart.destroy(); riskChart = null; }
+            if (depthChart) { depthChart.destroy(); depthChart = null; }
+        }
+
+        // Render all charts with data
+        function renderCharts(data) {
+            // Render summary cards
+            const summary = data.summary;
+            chartSummary.innerHTML = `
+                <div class="summary-card total">
+                    <div class="card-value">${summary.total_features}</div>
+                    <div class="card-label">Total Features</div>
+                </div>
+                <div class="summary-card at-risk">
+                    <div class="card-value">${summary.at_risk}</div>
+                    <div class="card-label">At Risk</div>
+                </div>
+                <div class="summary-card safe">
+                    <div class="card-value">${summary.safe}</div>
+                    <div class="card-label">Safe</div>
+                </div>
+                <div class="summary-card percentage">
+                    <div class="card-value">${summary.percentage_at_risk}%</div>
+                    <div class="card-label">Exposure Rate</div>
+                </div>
+            `;
+
+            // Chart.js default dark theme options
+            const darkThemeOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e2e8f0',
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            };
+
+            // Destroy existing charts
+            if (exposureChart) exposureChart.destroy();
+            if (riskChart) riskChart.destroy();
+            if (depthChart) depthChart.destroy();
+
+            // Exposure Pie Chart
+            const exposureCtx = document.getElementById('exposureChart').getContext('2d');
+            exposureChart = new Chart(exposureCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.exposure_pie.labels,
+                    datasets: [{
+                        data: data.exposure_pie.values,
+                        backgroundColor: data.exposure_pie.backgroundColors,
+                        borderColor: data.exposure_pie.colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...darkThemeOptions,
+                    cutout: '60%',
+                    plugins: {
+                        ...darkThemeOptions.plugins,
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#e2e8f0', font: { size: 12 }, padding: 15 }
+                        }
+                    }
+                }
+            });
+
+            // Risk Distribution Pie Chart
+            const riskCtx = document.getElementById('riskChart').getContext('2d');
+            riskChart = new Chart(riskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.risk_distribution.labels,
+                    datasets: [{
+                        data: data.risk_distribution.values,
+                        backgroundColor: data.risk_distribution.backgroundColors,
+                        borderColor: data.risk_distribution.colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...darkThemeOptions,
+                    cutout: '60%',
+                    plugins: {
+                        ...darkThemeOptions.plugins,
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#e2e8f0', font: { size: 12 }, padding: 15 }
+                        }
+                    }
+                }
+            });
+
+            // Depth Distribution Bar Chart
+            const depthCtx = document.getElementById('depthChart').getContext('2d');
+            depthChart = new Chart(depthCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.depth_distribution.labels,
+                    datasets: [{
+                        label: 'Features',
+                        data: data.depth_distribution.values,
+                        backgroundColor: data.depth_distribution.backgroundColors,
+                        borderColor: data.depth_distribution.colors,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...darkThemeOptions,
+                    plugins: {
+                        ...darkThemeOptions.plugins,
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { size: 11 } },
+                            grid: { color: 'rgba(71, 85, 105, 0.3)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#94a3b8', font: { size: 11 } },
+                            grid: { color: 'rgba(71, 85, 105, 0.3)' }
+                        }
+                    }
+                }
+            });
+
+            // Feature types badges
+            const featureTypes = data.feature_types || {};
+            if (Object.keys(featureTypes).length > 0) {
+                featureTypesList.innerHTML = Object.entries(featureTypes)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([type, count]) => `
+                        <div class="feature-type-badge">
+                            ${type}
+                            <span class="count">${count}</span>
+                        </div>
+                    `).join('');
+                document.getElementById('featureTypesContainer').style.display = 'block';
+            } else {
+                document.getElementById('featureTypesContainer').style.display = 'none';
+            }
+        }
+
+        // Handle clicks on flood_stats links in messages
+        function handleFloodStatsClick(event) {
+            const link = event.target.closest('a');
+            if (link && link.href && link.href.includes('flood_stats:')) {
+                event.preventDefault();
+                const layerName = link.href.split('flood_stats:')[1];
+                if (layerName) {
+                    openChartModal(layerName);
+                }
+            }
+        }
+
+        // ========== END CHART MODAL FUNCTIONS ==========
+
+        // Change basemap style
+        function changeBasemap(styleId) {
+            if (styleId === currentBasemap) return;
+
+            const styleUrl = `mapbox://styles/mapbox/${styleId}`;
+
+            // Store current layers and sources data before changing style
+            const layerData = {};
+            const sourceData = {};
+
+            // Save vector layers
+            Object.entries(layers).forEach(([name, data]) => {
+                const sourceId = `source-${name}`;
+                const source = map.getSource(sourceId);
+                if (source && source._data) {
+                    sourceData[sourceId] = source._data;
+                    layerData[name] = { ...data, sourceId };
+                }
+            });
+
+            // Save raster layers info
+            const rasterSourceData = {};
+            Object.entries(rasterLayers).forEach(([name, data]) => {
+                const sourceId = `raster-source-${name}`;
+                const source = map.getSource(sourceId);
+                if (source) {
+                    rasterSourceData[name] = {
+                        url: source.url,
+                        coordinates: source.coordinates
+                    };
+                }
+            });
+
+            // Change style
+            map.setStyle(styleUrl);
+
+            // Re-add layers after style loads
+            map.once('style.load', () => {
+                // Re-add vector layers
+                Object.entries(layerData).forEach(([name, data]) => {
+                    const sourceId = data.sourceId;
+                    const geojson = sourceData[sourceId];
+                    if (geojson) {
+                        addLayerToMap(name, geojson, data.color);
+                    }
+                });
+
+                // Re-add raster layers
+                Object.entries(rasterSourceData).forEach(([name, srcData]) => {
+                    const sourceId = `raster-source-${name}`;
+                    const layerId = `raster-layer-${name}`;
+
+                    map.addSource(sourceId, {
+                        type: 'image',
+                        url: srcData.url,
+                        coordinates: srcData.coordinates
+                    });
+
+                    map.addLayer({
+                        id: layerId,
+                        type: 'raster',
+                        source: sourceId,
+                        paint: {
+                            'raster-opacity': 0.7,
+                            'raster-fade-duration': 0
+                        }
+                    });
+
+                    // Restore visibility state
+                    if (hiddenRasterLayers.has(name)) {
+                        map.setLayoutProperty(layerId, 'visibility', 'none');
+                    }
+                });
+            });
+
+            currentBasemap = styleId;
+
+            // Save to localStorage
+            localStorage.setItem('riskscoop_basemap', styleId);
+
+            // Update menu UI
+            document.querySelectorAll('.basemap-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.style === styleId);
+            });
+        }
+
+        // Toggle basemap menu
+        function toggleBasemapMenu() {
+            basemapMenu.classList.toggle('open');
+        }
+
+        // Add raster layer to map (for flood hazard overlay)
+        async function addRasterLayerToMap(name, rasterInfo) {
+            const sourceId = `raster-source-${name}`;
+            const layerId = `raster-layer-${name}`;
+
+            // Remove existing if present
+            if (map.getLayer(layerId)) map.removeLayer(layerId);
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+
+            // Get TIFF filename from path
+            const tiffPath = rasterInfo.tiff_path;
+            const filename = tiffPath.split('/').pop();
+            const tiffUrl = `${API_BASE}/flood/${filename}`;
+
+            try {
+                // Load and render GeoTIFF
+                const tiffData = await loadGeoTiff(tiffUrl);
+
+                // Convert canvas to data URL
+                const imageUrl = tiffData.canvas.toDataURL('image/png');
+
+                // Coordinates for image overlay: [[west, north], [east, north], [east, south], [west, south]]
+                const bounds = tiffData.bounds;
+                const coords = [
+                    [bounds.west, bounds.north],   // top-left
+                    [bounds.east, bounds.north],   // top-right
+                    [bounds.east, bounds.south],   // bottom-right
+                    [bounds.west, bounds.south]    // bottom-left
+                ];
+
+                // Add image source
+                map.addSource(sourceId, {
+                    type: 'image',
+                    url: imageUrl,
+                    coordinates: coords
+                });
+
+                // Add raster layer
+                map.addLayer({
+                    id: layerId,
+                    type: 'raster',
+                    source: sourceId,
+                    paint: {
+                        'raster-opacity': 0.7,
+                        'raster-fade-duration': 0
+                    }
+                });
+
+                // Fit to raster bounds
+                map.fitBounds([
+                    [bounds.west, bounds.south],
+                    [bounds.east, bounds.north]
+                ], { padding: 50 });
+
+                // Store bounds for fit all
+                rasterInfo.bounds = bounds;
+
+                // Store raster data for tooltip queries
+                floodRasterData[name] = {
+                    data: tiffData.data,
+                    width: tiffData.width,
+                    height: tiffData.height,
+                    bounds: bounds
+                };
+
+                console.log(`GeoTIFF loaded: ${filename} (${tiffData.width}x${tiffData.height})`);
+
+            } catch (e) {
+                console.error('Failed to load GeoTIFF:', e);
+                throw e;
+            }
+
+            return rasterInfo;
+        }
+
+        // Fetch layer GeoJSON from backend
+        async function fetchLayer(uuid) {
+            try {
+                const response = await fetch(`${API_BASE}/layers/${uuid}`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (e) {
+                console.error('Failed to fetch layer:', e);
+            }
+            return null;
+        }
+
+        // Tool name to friendly description with arguments
+        function getToolDescription(toolName, toolArgs) {
+            const args = toolArgs || {};
+            switch (toolName) {
+                case 'search_division':
+                    return `Searching for "${args.query || 'location'}"...`;
+                case 'get_division':
+                    return `Getting boundary for "${args.division_name || 'area'}"...`;
+                case 'get_overture_data':
+                    return `Querying ${args.output_layer_name || 'features'}...`;
+                case 'get_flood_forecast':
+                    const rp = args.return_period ? ` (RP${args.return_period})` : '';
+                    return `Fetching flood data${rp}...`;
+                case 'intersect_flood_zones':
+                    return `Analyzing flood risk for "${args.features_layer_name || 'features'}"...`;
+                case 'list_layers':
+                    return 'Listing available layers...';
+                default:
+                    return `Running ${toolName}...`;
+            }
+        }
+
+        // Send message to agent with streaming
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Create conversation if this is the first message
+            if (currentConversationIndex < 0) {
+                const newConv = {
+                    id: Date.now(),
+                    title: extractConversationTitle(message),
+                    createdAt: new Date().toISOString(),
+                    messages: '',
+                    sessionId: null,
+                    layers: {},
+                    rasterLayers: {}
+                };
+                conversations.unshift(newConv);
+                currentConversationIndex = 0;
+                saveConversationsToStorage();
+                updateConversationsPanel();
+            } else if (conversations[currentConversationIndex].title === 'New Chat') {
+                conversations[currentConversationIndex].title = extractConversationTitle(message);
+                saveConversationsToStorage();
+                updateConversationsPanel();
+            }
+
+            userInput.value = '';
+            sendBtn.disabled = true;
+            addMessage(message, 'user');
+
+            // State tracking
+            const shownTools = new Set();
+            let lastSessionState = null;
+            let streamingContent = '';
+            let streamingMsgCreated = false;
+
+            try {
+                const formData = new FormData();
+                formData.append('message', message);
+                formData.append('stream', 'true');
+                if (sessionId) {
+                    formData.append('session_id', sessionId);
+                }
+
+                const response = await fetch(`${API_BASE}/agents/riskscoop/runs`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                // Show tool step as intermediate message
+                function showToolStep(name, args) {
+                    if (name && !shownTools.has(name)) {
+                        shownTools.add(name);
+                        const description = getToolDescription(name, args);
+                        addMessage('', 'tool-call', { toolName: description });
+                    }
+                }
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        const data = line.slice(6);
+                        if (data === '[DONE]') continue;
+
+                        try {
+                            const event = JSON.parse(data);
+                            console.log('Stream event:', event);
+
+                            // Handle different Agno event types
+                            switch (event.event) {
+                                case 'ToolCallStarted':
+                                    // Show tool being called with arguments
+                                    if (event.tool?.tool_name) {
+                                        // Try different possible locations for arguments
+                                        let toolArgs = event.tool.tool_args || event.tool.args || event.tool_args || event.arguments || {};
+                                        // If args is a string (JSON), parse it
+                                        if (typeof toolArgs === 'string') {
+                                            try { toolArgs = JSON.parse(toolArgs); } catch(e) { toolArgs = {}; }
+                                        }
+                                        console.log('Tool call:', event.tool.tool_name, 'Args:', toolArgs, 'Full event:', event);
+                                        showToolStep(event.tool.tool_name, toolArgs);
+                                    }
+                                    break;
+
+                                case 'RunContent':
+                                    // Streaming content chunk - accumulate it
+                                    if (event.content) {
+                                        streamingContent += event.content;
+                                        // Start streaming message if not created yet
+                                        if (!streamingMsgCreated && streamingContent.trim()) {
+                                            hideTyping();
+                                            addStreamingMessage();
+                                            streamingMsgCreated = true;
+                                        }
+                                        if (streamingMsgCreated) {
+                                            updateStreamingMessage(streamingContent);
+                                        }
+                                    }
+                                    break;
+
+                                case 'RunCompleted':
+                                    // Final response - use this as the definitive content
+                                    if (event.content) {
+                                        streamingContent = event.content;
+                                    }
+                                    if (event.session_state) {
+                                        lastSessionState = event.session_state;
+                                    }
+                                    break;
+                            }
+
+                            // Always capture session_id
+                            if (event.session_id) {
+                                sessionId = event.session_id;
+                            }
+
+                        } catch (e) {
+                            // Ignore parse errors
+                        }
+                    }
+                }
+
+                // Finalize response
+                hideTyping();
+                if (streamingMsgCreated && streamingContent) {
+                    finalizeStreamingMessage(streamingContent);
+                } else if (streamingContent) {
+                    addMessage(streamingContent, 'assistant');
+                } else {
+                    addMessage('Done.', 'assistant');
+                }
+
+                // Process layers
+                if (lastSessionState) {
+                    await processSessionState(lastSessionState);
+                }
+
+                saveCurrentConversation();
+
+            } catch (error) {
+                addMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                hideTyping();
+            }
+        }
+
+        // Process session state for layers
+        async function processSessionState(sessionState) {
+            // Check for raster layers FIRST (flood data) - these take priority
+            const rasterLayerNames = new Set();
+            if (sessionState.raster_layers) {
+                for (const [name, rasterInfo] of Object.entries(sessionState.raster_layers)) {
+                    rasterLayerNames.add(name);
+                    if (!rasterLayers[name] && rasterInfo.type === 'raster') {
+                        try {
+                            await addRasterLayerToMap(name, rasterInfo);
+                            rasterLayers[name] = rasterInfo;
+                            updateLayersPanel();
+                            addMessage(`Flood layer "${name}" added to map`, 'system');
+                        } catch (e) {
+                            console.error('Failed to load GeoTIFF:', e);
+                            addMessage(`Error loading flood raster: ${e.message}`, 'error');
+                        }
+                    }
+                }
+            }
+
+            // Check for new vector layers in session state
+            if (sessionState.layers) {
+                for (const [name, uuid] of Object.entries(sessionState.layers)) {
+                    // Skip if this layer has a raster version (it's flood data)
+                    if (rasterLayerNames.has(name)) continue;
+
+                    if (!layers[name]) {
+                        const geojson = await fetchLayer(uuid);
+                        if (geojson) {
+                            const color = getNextColor();
+                            const count = addLayerToMap(name, geojson, color);
+                            layers[name] = { uuid, color, count };
+                            updateLayersPanel();
+
+                            // Show feature summary with breakdown
+                            const summary = generateFeatureSummary(name, geojson);
+                            addMessage(summary, 'system');
+                        }
+                    }
+                }
+            }
+        }
+
+        // Generate a summary of features in a layer
+        function generateFeatureSummary(name, geojson) {
+            const features = geojson.features || [];
+            const count = features.length;
+
+            if (count === 0) {
+                return `Layer "${name}" added (empty)`;
+            }
+
+            // Collect stats about the features
+            const stats = {};
+
+            for (const f of features.slice(0, 100)) { // Sample first 100
+                const props = f.properties || {};
+
+                // Count by subtype or class or primary_category
+                const category = props.subtype || props.class || props.primary_category || props.type || 'other';
+                stats[category] = (stats[category] || 0) + 1;
+            }
+
+            // Format summary
+            let summary = `Layer "${name}" added with **${count} features**`;
+
+            const sortedStats = Object.entries(stats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5); // Top 5 categories
+
+            if (sortedStats.length > 0 && sortedStats.length <= 5) {
+                const breakdown = sortedStats
+                    .map(([cat, num]) => `${cat}: ${num}`)
+                    .join(', ');
+                summary += ` — ${breakdown}`;
+            }
+
+            return summary;
+        }
+
+        // Initialize Mapbox map
+        async function initApp() {
+            try {
+                // Fetch config from backend
+                const response = await fetch(`${API_BASE}/app-config`);
+                const config = await response.json();
+                MAPBOX_TOKEN = config.mapbox_token;
+
+                // Initialize map with saved basemap
+                mapboxgl.accessToken = MAPBOX_TOKEN;
+                const savedBasemap = localStorage.getItem('riskscoop_basemap') || 'dark-v11';
+                currentBasemap = savedBasemap;
+
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: `mapbox://styles/mapbox/${savedBasemap}`,
+                    center: [19.4560, 51.7592], // Lodz default
+                    zoom: 11
+                });
+
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+                // Update basemap menu to show correct selection
+                document.querySelectorAll('.basemap-option').forEach(opt => {
+                    opt.classList.toggle('active', opt.dataset.style === savedBasemap);
+                });
+
+                // Add flood tooltip on mouse move
+                map.on('mousemove', (e) => {
+                    const floodInfo = getFloodValueAtPoint(e.lngLat.lng, e.lngLat.lat);
+                    if (floodInfo) {
+                        showFloodTooltip(e, floodInfo);
+                        map.getCanvas().style.cursor = 'pointer';
+                    } else {
+                        hideFloodTooltip();
+                        map.getCanvas().style.cursor = '';
+                    }
+                });
+
+                map.on('mouseleave', () => {
+                    hideFloodTooltip();
+                });
+
+                // Event listeners
+                sendBtn.addEventListener('click', sendMessage);
+                userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendMessage();
+                });
+                newChatBtn.addEventListener('click', newConversation);
+
+                // Basemap selector events
+                basemapBtn.addEventListener('click', toggleBasemapMenu);
+
+                document.querySelectorAll('.basemap-option').forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        changeBasemap(opt.dataset.style);
+                        basemapMenu.classList.remove('open');
+                    });
+                });
+
+                // Close basemap menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!basemapBtn.contains(e.target) && !basemapMenu.contains(e.target)) {
+                        basemapMenu.classList.remove('open');
+                    }
+                });
+
+                // Chart modal events
+                chartModalClose.addEventListener('click', closeChartModal);
+                chartModal.addEventListener('click', (e) => {
+                    if (e.target === chartModal) closeChartModal();
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (chartModal.classList.contains('open')) {
+                            closeChartModal();
+                        }
+                        closeHistoryPanel();
+                    }
+                });
+
+                // Listen for clicks on flood_stats links in chat
+                chatArea.addEventListener('click', handleFloodStatsClick);
+
+                // History panel events
+                hamburgerBtn.addEventListener('click', openHistoryPanel);
+                historyClose.addEventListener('click', closeHistoryPanel);
+
+                // Load saved conversations from localStorage
+                loadConversationsFromStorage();
+
+                // Initialize layers panel (show empty state)
+                updateLayersPanel();
+
+                // Focus input
+                userInput.focus();
+
+            } catch (e) {
+                console.error('Failed to initialize app:', e);
+                addMessage('Error: Could not load configuration. Make sure the backend is running.', 'error');
+            }
+        }
+
+        // Start the app
+        initApp();
+    </script>
+</body>
+</html>

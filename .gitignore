@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+venv/
+.venv/
+
+# Environment / Secrets
+.env
+.env.local
+.env.docker
+.env.*.local
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.lof
+*.lot
+*.toc
+*.out
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.run.xml
+*-blx.bib
+*.nav
+*.snm
+*.synctex.gz
+
+# Generated outputs
+riskscoop-ai/backend/output/
+riskscoop-ai/backend/tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database
+*.db

@@ -1,0 +1,84 @@
+\section{Analiza istniejących rozwiązań}
+\label{chap:drugi}
+
+Rozdział przedstawia analizę konkurencyjnych rozwiązań na rynku systemów analizy geoprzestrzennej z~interfejsem języka naturalnego oraz platform oceny ryzyka powodziowego.
+
+\subsection{Platformy geoinformacyjne z~interfejsem języka naturalnego}
+
+\subsubsection{Ageospatial}
+
+Ageospatial to szwajcarski startup oferujący platformę analizy geoprzestrzennej z~agentem AI, rozwinięty we współpracy ze Swiss Federal Office of Topography (swisstopo). Platforma obsługuje zapytania typu ,,Budynki zagrożone osuwiskami'' czy ,,Ryzyko powodziowe w~okolicy mojego domu''. Oferuje wdrożenia lokalne (on-premise) dla instytucji rządowych oraz visible reasoning graphs zwiększające przejrzystość decyzji agenta.
+
+\subsubsection{Ask.Earth}
+
+Ask.Earth oferuje platformę GIA (Geospatial Intelligence Agent) przetwarzającą zapytania w~języku naturalnym dotyczące obrazów satelitarnych. Platforma koncentruje się na sektorach: energetyka (współpraca z~TotalEnergies), monitoring środowiskowy i~intelligence przedsiębiorstw. Nie specjalizuje się w~ryzyku powodziowym ani infrastrukturze krytycznej.
+
+\subsubsection{Google Earth AI z~Gemini}
+
+W~2024 roku Google uruchomił pilotaż Google Earth AI z~modelem Gemini, oferując geospatial reasoning oraz integrację z~Google Earth Engine. Wejście Google stanowi zagrożenie dla platform generalistycznych, jednak specjalizacja niszowa (flood risk dla infrastruktury) pozostaje poza zainteresowaniem giganta technologicznego.
+
+\subsection{Platformy oceny ryzyka powodziowego}
+
+\subsubsection{SaferPlaces}
+
+SaferPlaces oferuje Digital Twin dla analizy ryzyka powodziowego, łącząc szybkie algorytmy AI z~modelami fizycznymi. System generuje wyniki w~czasie rzeczywistym dla obszarów od pojedynczych posesji po regiony metropolitalne. Skierowany jest do ubezpieczycieli i~administracji publicznej. Nie oferuje interfejsu języka naturalnego.
+
+\subsubsection{Blue Sky Analytics}
+
+Blue Sky Analytics specjalizuje się w~monitorowaniu powodzi z~danych satelitarnych, transformując terabajty danych w~actionable datasets. Koncentruje się na near real-time monitoring aktualnych powodzi, podczas gdy RiskScoop AI oferuje pre-disaster risk assessment.
+
+\subsubsection{Flood Factor (First Street Foundation)}
+
+Flood Factor to narzędzie non-profit oferujące ocenę ryzyka powodziowego dla 142 milionów nieruchomości w~USA~\cite{firststreet2020flood}. Przypisuje każdej nieruchomości Flood Factor Score (1--10) uwzględniając projekcje klimatyczne na 30 lat. Pokrycie geograficzne ograniczone do USA, brak interfejsu NL, koncentracja na nieruchomościach mieszkalnych.
+
+\subsection{Prototypy akademickie}
+
+Prototypy akademickie (ChatGeoAI, LLM-Find, GeoGPT, GeoAgent) opisane w~rozdziale~\ref{chap:pierwszy} demonstrują techniczną wykonalność integracji LLM z~operacjami geoprzestrzennymi. Osiągają wskaźniki sukcesu 76--87\%, co stanowi benchmark dla RiskScoop AI. Żaden nie specjalizuje się w~flood risk assessment.
+
+\subsection{Analiza porównawcza}
+
+Tabela~\ref{tab:competitive-comparison} przedstawia porównanie kluczowych rozwiązań.
+
+\begin{table}[H]
+\centering
+\caption{Porównanie konkurencyjnych rozwiązań}
+\label{tab:competitive-comparison}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Rozwiązanie} & \textbf{NL} & \textbf{Flood} & \textbf{Infra} & \textbf{Typ} \\
+\hline
+Ageospatial & Tak & Częściowo & Nie & Komercyjny \\
+\hline
+Ask.Earth & Tak & Nie & Nie & Komercyjny \\
+\hline
+Google Earth AI & Tak & Nie & Nie & Korporacyjny \\
+\hline
+SaferPlaces & Nie & Tak & Częściowo & Komercyjny \\
+\hline
+Blue Sky Analytics & Nie & Tak & Nie & Komercyjny \\
+\hline
+Flood Factor & Nie & Tak (USA) & Nie & Non-profit \\
+\hline
+ChatGeoAI & Tak & Nie & Nie & Akademicki \\
+\hline
+GeoAgent & Tak & Nie & Nie & Akademicki \\
+\hline
+\textbf{RiskScoop AI} & \textbf{Tak} & \textbf{Tak} & \textbf{Tak} & \textbf{Akademicki} \\
+\hline
+\end{tabular}
+\end{table}
+
+Legenda: NL -- interfejs języka naturalnego, Flood -- ocena ryzyka powodziowego, Infra -- specjalizacja w~infrastrukturze krytycznej.
+
+\subsection{Identyfikacja luki rynkowej}
+
+Z~analizy wynika, że \textbf{żadne istniejące rozwiązanie nie łączy interfejsu języka naturalnego z~oceną ryzyka powodziowego dla infrastruktury krytycznej}. Platformy NL (Ageospatial, Ask.Earth) nie specjalizują się w~flood risk. Platformy flood risk (SaferPlaces, Flood Factor) nie oferują interfejsu NL. Żadne rozwiązanie nie koncentruje się na infrastrukturze krytycznej w~kontekście Rapid Mapping.
+
+RiskScoop AI wypełnia tę lukę poprzez:
+\begin{itemize}
+    \item Interfejs języka naturalnego dla intuicyjnych zapytań
+    \item Integrację z~Copernicus GloFAS dla danych powodziowych
+    \item Specjalizację w~infrastrukturze krytycznej (szpitale, szkoły, transport)
+    \item Wykorzystanie europejskich otwartych danych (Overture Maps, GloFAS)
+\end{itemize}
+

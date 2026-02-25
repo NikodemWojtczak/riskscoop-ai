@@ -1,0 +1,90 @@
+
+\section*{Wnioski}
+\addcontentsline{toc}{section}{Wnioski}
+
+Na podstawie przeprowadzonych prac nad systemem RiskScoop AI sformułowano następujące wnioski:
+
+\begin{enumerate}
+    \item \textbf{skuteczność agentów AI} -- duże modele językowe upraszczają interakcję użytkownika z~systemem analizy geoprzestrzennej -- użytkownik nie musi znać składni GIS,
+
+    \item \textbf{wartość otwartych danych} -- integracja z~Overture Maps Foundation i~Copernicus GloFAS pokazuje, że otwarte dane wystarczają do budowy użytecznych narzędzi analitycznych,
+
+    \item \textbf{architektura AgentOS} -- wzorzec AgentOS z~frameworka Agno upraszcza implementację -- automatyczne generowanie API eliminuje ręczne definiowanie endpointów,
+
+    \item \textbf{model ryzyka} -- klasyfikacja oparta na 5~klasach głębokości powodzi z~danych GloFAS okazała się skuteczna w~identyfikacji zagrożonej infrastruktury.
+\end{enumerate}
+
+\subsection*{Ograniczenia pracy}
+
+\begin{itemize}
+    \item zależność od zewnętrznych API (Google Gemini, Copernicus CDS, Overture Maps),
+    \item dane GloFAS reprezentują scenariusze modelowe, nie rzeczywiste bieżące zagrożenie,
+    \item brak walidacji modelu z~danymi historycznymi o~rzeczywistych stratach powodziowych.
+\end{itemize}
+
+\subsection*{Kierunki dalszych prac}
+
+\begin{enumerate}
+    \item integracja z~polskim systemem ISOK i~danymi IMGW,
+    \item rozbudowa modelu o~współczynniki podatności infrastruktury,
+    \item generowanie raportów PDF dla potrzeb zarządzania kryzysowego,
+    \item powiadomienia o~zmianie poziomu ryzyka w~czasie rzeczywistym.
+\end{enumerate}
+
+\section*{Podsumowanie}
+\addcontentsline{toc}{section}{Podsumowanie}
+
+Praca przedstawiła projekt i~implementację systemu RiskScoop AI -- narzędzia do analizy ryzyka powodziowego z~wykorzystaniem agenta AI.
+
+\subsection*{Realizacja celów pracy}
+
+Wszystkie cele zdefiniowane we wstępie zostały zrealizowane:
+
+\begin{enumerate}
+    \item \textbf{cel główny} -- opracowano działający system analizy ryzyka powodziowego z~interfejsem w~języku naturalnym,
+
+    \item \textbf{cele szczegółowe}:
+    \begin{itemize}
+        \item zaprojektowano architekturę agenta AI z~6~narzędziami,
+        \item zintegrowano dane Overture Maps, Copernicus GloFAS i~OpenStreetMap,
+        \item zaimplementowano model klasyfikacji ryzyka,
+        \item stworzono responsywny interfejs z~mapą Mapbox.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Weryfikacja kryteriów sukcesu}
+
+Wszystkie kryteria sukcesu zdefiniowane w~rozdziale ,,Cel i~zakres pracy'' zostały spełnione:
+
+\begin{itemize}
+    \item interpretacja języka naturalnego: \textbf{80\%} (wymagane $\geq$80\%),
+    \item czas odpowiedzi: \textbf{90\% zapytań $\leq$30s} (wymagane $\leq$30s),
+    \item identyfikacja obiektów: zgodna z~danymi Overture Maps,
+    \item kwantyfikacja ryzyka: oparta na danych GloFAS,
+    \item interfejs użytkownika: intuicyjny, z~filtrowaniem i~wizualizacją.
+\end{itemize}
+
+\subsection*{Główne osiągnięcia}
+
+\begin{enumerate}
+    \item agent AI z~AgentOS i~modelem Gemini 3 Pro,
+    \item 6 narzędzi do analizy geoprzestrzennej,
+    \item algorytm \texttt{assemble\_rings} do rekonstrukcji granic z~OSM,
+    \item integracja trzech źródeł danych geoprzestrzennych,
+    \item interfejs użytkownika z~mapą interaktywną.
+\end{enumerate}
+
+\subsection*{Praktyczne zastosowania}
+
+System może znaleźć zastosowanie w:
+
+\begin{itemize}
+    \item zarządzaniu kryzysowym -- ocena zagrożeń dla infrastruktury,
+    \item planowaniu przestrzennym -- identyfikacja obszarów ryzyka,
+    \item ubezpieczeniach -- szacowanie ekspozycji na ryzyko powodziowe.
+\end{itemize}
+
+\vspace{1cm}
+
+Zrealizowany prototyp pokazuje, że agenci AI w~połączeniu z~otwartymi danymi geoprzestrzennymi pozwalają budować narzędzia analityczne dostępne dla użytkowników bez wiedzy technicznej.
+
